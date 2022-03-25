@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>Translation stuff</h1>
+    <p class="mt-5">
+    For now, this is a translation service, but more services will be added later.<br>
+    Currently, there is one route available:<br /><br />
+    </p>
+    <h3>Translation </h3>
+    <code><a href="/translation/uk/en/Це тест">/translation/uk/en/<b>Ukrainian text to be translated to Ukrainian</b></a></code><br /><br />
+    <code><a href="/translation/en/uk/This is a test">/translation/en/uk/<b>English text to be translated to English</b></a></code><br /><br />
+    <code><a href="/translation/en/ru/This is a test">/translation/en/ru/<b>English text to be translated to Russian</b></a></code>
+{% endblock %}

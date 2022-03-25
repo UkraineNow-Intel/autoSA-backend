@@ -1,0 +1,4 @@
+black
+pycodestyle
+flake8
+pytest
