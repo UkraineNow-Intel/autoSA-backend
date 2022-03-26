@@ -15,10 +15,15 @@ Current tasks can be found on Jira, but also feel free to ask in our group chat 
 
 `pip install -r requirements.txt -r requirements-dev.txt -U --upgrade-strategy only-if-needed`
 
-2. Configure Server by copying server.config.default file
+
+2. (Optional, for location parsing): Install Spacy language models:
+
+`python -m spacy download en_core_web_sm ru_core_news_sm`
+
+3. Configure Server by copying server.config.default file
 `cp server.config.default server.config`
 
-3. Run server
+4. Run server
 `python flaskapp.py`
 
 For gunicore, the wsgi file can be used to run the server.
