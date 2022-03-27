@@ -44,6 +44,8 @@ TWITTER_SOURCE_ACCOUNTS = [
     "sentdefender",
     "JoeBiden",
     "CNN",
+    "RFERL",
+    "ukr_satflash"
 ]
 
 
