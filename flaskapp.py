@@ -1,5 +1,5 @@
 import json
-
+import os
 import configparser
 from flask import Flask, render_template
 
@@ -11,7 +11,8 @@ print(config["DEFAULT"]["Port"])
 
 DEBUG_MODE = config.getboolean("DEFAULT", "Debug")
 
-app = Flask(__name__)
+template_dir = os.path.abspath('./website/templates/')
+app = Flask(__name__, template_folder=template_dir)
 app.config["JSON_AS_ASCII"] = False
 
 translator = Translator()
@@ -19,7 +20,7 @@ translator = Translator()
 
 @app.route("/", methods=["GET"])
 def index():
-    return render_template('website/templates/home.html')
+    return render_template('./translation.html')
 
 
 @app.route(
