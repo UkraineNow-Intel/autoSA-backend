@@ -45,7 +45,9 @@ TWITTER_SOURCE_ACCOUNTS = [
     "JoeBiden",
     "CNN",
     "RFERL",
-    "ukr_satflash"
+    "ukr_satflash",
+    "PowerOutage_us",
+    "CAT_UXO"
 ]
 
 
