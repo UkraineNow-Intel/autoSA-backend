@@ -1,6 +1,37 @@
+import os
 import shapefile
 from OSMPythonTools.api import Api
+from OSMPythonTools.overpass import Overpass
+from input import osmIDs
 
+# Ukraine: Україна
+
+osmIDs = osmIDs[:3000]
+overpass = Overpass()
+#result = overpass.query('area[name = "Україна"];way(area)["highway"~"^(motorway|trunk|primary|secondary)$"]; out;', timeout=10000)
+result = overpass.query('area[name = "Україна"];(way(area)["highway"~"^(motorway|trunk|primary|secondary)$"]; >;);', timeout=10000)
+
+for element in result.elements():
+    print(element.tag('name'))
+
+exit()
+
+
+query = "way(id:"
+i = 0
+for way_id in osmIDs:
+    query += f"{way_id}, "
+    i += 1
+    if i % 1000 == 0 or i == len(osmIDs):
+        query = query[:-2]
+        query += "); out tags;"
+        result = overpass.query(query)
+        for element in result.elements():
+            print(element.tag('name'))
+        query = "way(id:"
+
+
+exit()
 from input import (
     osmIDs,
 )  # input.py file in the same folder that just contains "osmIDs = [111111, 22223232, ...] "
@@ -136,7 +167,7 @@ def append_fields_not_in_sorted_list():
         "These fields were not in the previous sorted list (interesting_columns), should they be appended?"
     )
     print(fields_not_in_sorted_list)
-    append_fields = input("Append new fields (Y/n)?")
+    append_fields = "Y" # input("Append new fields (Y/n)?")
     append_fields = append_fields == "" or append_fields == "Y" or append_fields == "y"
 
     if append_fields:
