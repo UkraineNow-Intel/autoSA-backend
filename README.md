@@ -23,13 +23,6 @@ Current tasks can be found on Jira, but also feel free to ask in our group chat 
 3. Configure Server by copying server.config.default file
 `cp server.config.default server.config`
 
-4. Run server
-`python flaskapp.py`
-
-For gunicore, the wsgi file can be used to run the server.
-
-There are other parts in this repository that will slowly be added to the flaskapp and are therefore not explained in the readme (yet).
-
 ## Start Django Server
 
 ```

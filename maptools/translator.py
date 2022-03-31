@@ -4,10 +4,9 @@ import pickle
 
 from easynmt import EasyNMT
 
+
 class Translator:
-    """
-    
-    """
+    """ """
 
     def __init__(self):
         self.model = None
