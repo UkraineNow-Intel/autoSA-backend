@@ -13,18 +13,28 @@ import requests
 import re
 
 
+# not necessarily for situational updates, but for news stories
 def get_latest_from_nbc():
-    global content
     url = 'https://www.nbcnews.com/world/russia-ukraine-news'
     res = requests.get(url)
     soup = BeautifulSoup(res.content, 'html.parser')
 
-    headlines = soup.findChildren('h2', text=re.compile(r'Ukraine'), limit=8)
+    items = soup.select('ul.alacarte__items', limit=8)
 
-    for i in range(len(headlines)):
-        content = headlines[i].text
+    item_dicts = []
+    for item in items:
+        text = item.select('li.alacarte__item')[0].text
+        item_dicts.append({
+            "interface": "website",
+            "source": "liveuamap.com",
+            "section": item.select('h2.unibrow'),
+            "headline": item.select('h2.alacarte__headline'),
+            "text": text,
+            "language": "en",
+            "timestamp": None,
+        })
 
-    nbc_data = pd.DataFrame(headlines)
+    nbc_data = pd.DataFrame(item_dicts)
     nbc_data.to_csv('infotools/CSVs/scraped.csv')
 
     return nbc_data
@@ -32,23 +42,31 @@ def get_latest_from_nbc():
 
 # result of this will need to be translated to english
 def get_latest_from_telegraf():
-    global content
     url = 'https://telegraf.com.ua/specials/voyna-na-donbasse'
     res = requests.get(url)
     soup = BeautifulSoup(res.content, 'html.parser')
 
-    headlines = soup.find_all('div', {'class': 'c-card-list__title'}, limit=5)
+    items = soup.select('div.c-card-list__main', limit=5)
 
-    for i in range(len(headlines)):
-        content = headlines[i].text
+    item_dicts = []
+    for item in items:
+        text = item.select('div.c-card-list__title')[0].text
+        item_dicts.append({
+            "interface": "website",
+            "source": "liveuamap.com",
+            "headline": None,
+            "text": text,
+            "language": "en",
+            "timestamp": None,
+        })
 
-    telegraf_data = pd.DataFrame(headlines)
+    telegraf_data = pd.DataFrame(item_dicts)
     telegraf_data.to_csv('infotools/CSVs/scraped.csv')
 
     return telegraf_data
 
 
-def get_from_liveuamap():
+def get_latest_from_liveuamap():
     url = 'https://liveuamap.com'
     res = requests.get(url)
     soup = BeautifulSoup(res.content, 'html.parser')
