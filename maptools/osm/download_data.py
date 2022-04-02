@@ -8,14 +8,11 @@ from input import osmIDs
 
 osmIDs = osmIDs[:3000]
 overpass = Overpass()
-# result = overpass.query('area[name = "Україна"];way(area)["highway"~"^(motorway|trunk|primary|secondary)$"]; out;', timeout=10000)
-result = overpass.query(
-    'area[name = "Україна"];(way(area)["highway"~"^(motorway|trunk|primary|secondary)$"]; >;);',
-    timeout=10000,
-)
+#result = overpass.query('area[name = "Україна"];way(area)["highway"~"^(motorway|trunk|primary|secondary)$"]; out;', timeout=10000)
+result = overpass.query('area[name = "Україна"];(way(area)["highway"~"^(motorway|trunk|primary|secondary)$"]; >;);', timeout=10000)
 
 for element in result.elements():
-    print(element.tag("name"))
+    print(element.tag('name'))
 
 exit()
 
@@ -30,7 +27,7 @@ for way_id in osmIDs:
         query += "); out tags;"
         result = overpass.query(query)
         for element in result.elements():
-            print(element.tag("name"))
+            print(element.tag('name'))
         query = "way(id:"
 
 
@@ -170,7 +167,7 @@ def append_fields_not_in_sorted_list():
         "These fields were not in the previous sorted list (interesting_columns), should they be appended?"
     )
     print(fields_not_in_sorted_list)
-    append_fields = "Y"  # input("Append new fields (Y/n)?")
+    append_fields = "Y" # input("Append new fields (Y/n)?")
     append_fields = append_fields == "" or append_fields == "Y" or append_fields == "y"
 
     if append_fields:

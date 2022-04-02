@@ -11,7 +11,7 @@ print(config["DEFAULT"]["Port"])
 
 DEBUG_MODE = config.getboolean("DEFAULT", "Debug")
 
-template_dir = os.path.abspath("./website/templates/")
+template_dir = os.path.abspath('./website/templates/')
 app = Flask(__name__, template_folder=template_dir)
 app.config["JSON_AS_ASCII"] = False
 
@@ -20,7 +20,7 @@ translator = Translator()
 
 @app.route("/", methods=["GET"])
 def index():
-    return render_template("./translation.html")
+    return render_template('./translation.html')
 
 
 @app.route(
