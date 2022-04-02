@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils import timezone
 from taggit.managers import TaggableManager
 
 
@@ -32,7 +33,7 @@ class Source(models.Model):
     headline = models.CharField(max_length=250, blank=True)
     text = models.TextField()
     language = models.CharField(max_length=2, choices=LANGUAGES)
-    timestamp = models.DateTimeField()
+    timestamp = models.DateTimeField(default=timezone.now)
     tags = TaggableManager(blank=True)
 
     def __str__(self):

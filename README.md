@@ -7,25 +7,38 @@ There is an internal list of commonly used sources for intelligence - in the rep
 Current tasks can be found on Jira, but also feel free to ask in our group chat if you need any assistance.
 
 ## Requirements
+
 - python==3.8.10 through python==3.9.9
 
 ## How do I get set up? ###
 
 1. Install requirements
 
-`pip install -r requirements.txt -r requirements-dev.txt -U --upgrade-strategy only-if-needed`
-
+```shell
+pip install -r requirements.txt -r requirements-dev.txt -U --upgrade-strategy only-if-needed
+```
 
 2. (Optional, for location parsing): Install Spacy language models:
 
-`python -m spacy download en_core_web_sm ru_core_news_sm`
+```shell
+python -m spacy download en_core_web_sm ru_core_news_sm
+```
 
-3. Configure Server by copying server.config.default file
-`cp server.config.default server.config`
+4. Run migrations
+
+```shell
+python manage.py migrate
+```
+
+5. Create a user that can log in to the website. You will be prompted for password:
+
+```shell
+python manage.py createsuperuser --email admin@example.com --username admin
+```
 
 ## Start Django Server
 
-```
+```shell
 python manage.py runserver
 ```
 
@@ -36,6 +49,12 @@ python manage.py runserver
 Tests should go in the `tests` directory.
 
 We suggest using `pytest`.
+
+Run tests with:
+
+```shell
+python manage.py test tests
+```
 
 * Code review
 
