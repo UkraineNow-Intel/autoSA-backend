@@ -10,7 +10,9 @@ from api.models import Source, INTERFACE_API, LANGUAGE_EN
 
 class SourceTests(APITestCase):
     def setUp(self) -> None:
-        user = models.User.objects.create(username="apitest", password="blah", is_superuser=True)
+        user = models.User.objects.create(
+            username="apitest", password="blah", is_superuser=True
+        )
         self.client.force_authenticate(user=user)
 
     def test_create_source(self):
