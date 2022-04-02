@@ -24,14 +24,17 @@ class SourceTests(APITestCase):
             "text": "Щось трапилося",
             "language": "ua",
             "timestamp": "2022-04-01T20:25:00Z",
+            "pinned": "true",
         }
         response = self.client.post(url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Source.objects.count(), 1)
         self.assertEqual(Source.objects.count(), 1)
         actual = Source.objects.get()
-        self.assertEqual(actual.text, "Щось трапилося")
-        self.assertEqual(set(actual.tags.names()), {"tag1", "tag2"})
+        for key in ["interface", "source", "headline", "text", "language"]:
+            actual_value = getattr(actual, key)
+            self.assertEqual(data[key], actual_value)
+        self.assertEqual(data["tags"], list(actual.tags.names()))
 
     def test_list_sources(self):
         """Retrieve sources"""
@@ -43,6 +46,7 @@ class SourceTests(APITestCase):
             text="Text from website",
             language=LANGUAGE_EN,
             timestamp=dt.datetime(2022, 4, 1, 20, 55, tzinfo=tz),
+            pinned=True,
         )
         source.tags.add("tag1", "tag2")
         url = reverse("source-list")
@@ -56,17 +60,16 @@ class SourceTests(APITestCase):
             "text": "Text from website",
             "language": "en",
             "timestamp": "2022-04-01T20:55:00Z",
+            "pinned": True,
         }
         sources = response.json()
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEquals(len(sources), 1)
         actual = sources[0]
         self.assertCountEqual(expected.keys(), actual.keys())
-        for key, value in actual.items():
-            if key == "tags":
-                self.assertCountEqual(expected[key], value)
-            else:
-                self.assertEqual(expected[key], value)
+        for key in ["interface", "source", "headline", "text", "language", "pinned"]:
+            self.assertEqual(expected[key], actual[key])
+        self.assertCountEqual(expected["tags"], actual["tags"])
 
     def test_delete_source(self):
         """Delete a source"""
@@ -78,6 +81,7 @@ class SourceTests(APITestCase):
             language=LANGUAGE_EN,
             tags=["tag1", "tag2"],
             timestamp=timezone.now(),
+            pinned=True,
         )
         source.save()
         url = reverse("source-detail", kwargs={"pk": source.id})
