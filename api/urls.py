@@ -1,9 +1,19 @@
 from django.urls import include, path
-from rest_framework import routers
+from rest_framework.routers import DefaultRouter
 from . import views
 
-router = routers.DefaultRouter(trailing_slash=False)
+
+class OptionalSlashRouter(DefaultRouter):
+    """Make all trailing slashes optional in the URLs used by the viewsets
+    """
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.trailing_slash = '/?'
+
+
+router = OptionalSlashRouter()
 router.register("sources", views.SourceViewSet)
+router.register("translations", views.TranslationViewSet)
 
 urlpatterns = [
     path("", include(router.urls)),

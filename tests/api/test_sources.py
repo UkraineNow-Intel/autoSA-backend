@@ -5,6 +5,7 @@ from django.contrib.auth import models
 from django.utils import timezone
 from rest_framework import status
 from rest_framework.test import APITestCase
+from taggit.models import Tag
 from api.models import Source, INTERFACE_API, LANGUAGE_EN
 
 
@@ -27,16 +28,17 @@ class SourceTests(APITestCase):
             "language": "ua",
             "timestamp": "2022-04-01T20:25:00Z",
             "pinned": "true",
+            "translations": [],
         }
         response = self.client.post(url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Source.objects.count(), 1)
-        self.assertEqual(Source.objects.count(), 1)
+        self.assertEqual(Tag.objects.count(), 2)
         actual = Source.objects.get()
         for key in ["interface", "source", "headline", "text", "language"]:
             actual_value = getattr(actual, key)
             self.assertEqual(data[key], actual_value)
-        self.assertEqual(data["tags"], list(actual.tags.names()))
+        self.assertCountEqual(data["tags"], list(actual.tags.names()))
 
     def test_list_sources(self):
         """Retrieve sources"""
@@ -54,7 +56,6 @@ class SourceTests(APITestCase):
         url = reverse("source-list")
         response = self.client.get(url, format="json")
         expected = {
-            "url": "http://testserver/api/sources/1",
             "tags": ["tag1", "tag2"],
             "interface": "api",
             "source": "www.example.com",
@@ -63,6 +64,7 @@ class SourceTests(APITestCase):
             "language": "en",
             "timestamp": "2022-04-01T20:55:00Z",
             "pinned": True,
+            "translations": [],
         }
         sources = response.json()
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -90,3 +92,4 @@ class SourceTests(APITestCase):
         response = self.client.delete(url, pk=1, format="json")
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(Source.objects.count(), 0)
+        self.assertEqual(Tag.objects.count(), 0)

@@ -49,7 +49,7 @@ class Translation(models.Model):
 
     language = models.CharField(max_length=2, choices=LANGUAGES)
     text = models.TextField()
-    source = models.ForeignKey(Source, on_delete=models.CASCADE)
+    source = models.ForeignKey(Source, on_delete=models.CASCADE, related_name="translations")
 
     def __str__(self):
         return f"""id: {self.id}, language: {self.language}, text: {self.text}"""
