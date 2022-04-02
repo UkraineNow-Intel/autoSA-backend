@@ -10,15 +10,14 @@ from api.models import Source, INTERFACE_API, LANGUAGE_EN
 
 class SourceTests(APITestCase):
     def setUp(self) -> None:
-        self.user = models.User(username="apitest", password="blah", is_superuser=True)
-        self.user.save()
-        self.client.force_authenticate(user=self.user)
+        user = models.User.objects.create(username="apitest", password="blah", is_superuser=True)
+        self.client.force_authenticate(user=user)
 
     def test_create_source(self):
         """Create a new source"""
         url = reverse("source-list")
         data = {
-            "tags": [],
+            "tags": ["tag1", "tag2"],
             "interface": "website",
             "source": "@Blah",
             "headline": "",
@@ -29,12 +28,15 @@ class SourceTests(APITestCase):
         response = self.client.post(url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Source.objects.count(), 1)
-        self.assertEqual(Source.objects.get().text, "Щось трапилося")
+        self.assertEqual(Source.objects.count(), 1)
+        actual = Source.objects.get()
+        self.assertEqual(actual.text, "Щось трапилося")
+        self.assertEqual(set(actual.tags.names()), {"tag1", "tag2"})
 
     def test_list_sources(self):
         """Retrieve sources"""
         tz = zoneinfo.ZoneInfo("UTC")
-        source = Source(
+        source = Source.objects.create(
             interface=INTERFACE_API,
             source="www.example.com",
             headline="Test headline",
@@ -42,12 +44,12 @@ class SourceTests(APITestCase):
             language=LANGUAGE_EN,
             timestamp=dt.datetime(2022, 4, 1, 20, 55, tzinfo=tz),
         )
-        source.save()
+        source.tags.add("tag1", "tag2")
         url = reverse("source-list")
         response = self.client.get(url, format="json")
         expected = {
             "url": "http://testserver/api/sources/1",
-            "tags": [],
+            "tags": ["tag1", "tag2"],
             "interface": "api",
             "source": "www.example.com",
             "headline": "Test headline",
@@ -55,10 +57,16 @@ class SourceTests(APITestCase):
             "language": "en",
             "timestamp": "2022-04-01T20:55:00Z",
         }
-        actual = response.json()
+        sources = response.json()
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEquals(len(actual), 1)
-        self.assertDictEqual(expected, actual[0])
+        self.assertEquals(len(sources), 1)
+        actual = sources[0]
+        self.assertCountEqual(expected.keys(), actual.keys())
+        for key, value in actual.items():
+            if key == "tags":
+                self.assertCountEqual(expected[key], value)
+            else:
+                self.assertEqual(expected[key], value)
 
     def test_delete_source(self):
         """Delete a source"""
@@ -68,6 +76,7 @@ class SourceTests(APITestCase):
             headline="Test headline",
             text="Text from website",
             language=LANGUAGE_EN,
+            tags=["tag1", "tag2"],
             timestamp=timezone.now(),
         )
         source.save()
