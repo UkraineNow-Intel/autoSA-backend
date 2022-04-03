@@ -1,5 +1,6 @@
 from typing import Union
 
+
 def represents_int(value: Union[str, int]) -> bool:
     """Checks whether or not a string or integer value represents an integer."""
 
