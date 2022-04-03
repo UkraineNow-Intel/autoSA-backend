@@ -67,8 +67,6 @@ cache/
 input.py
 *.config
 log.txt
-flaskapp.sock
-.flaskapp.py.swp
 
 # Virtual environments
 venv
