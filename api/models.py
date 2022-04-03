@@ -26,7 +26,8 @@ INTERFACES = (
 
 
 class Source(models.Model):
-    """Represents a single event / piece of information from twitter, external API, web, etc."""
+    """Represents a single event / piece of information from twitter,
+    external API, web, etc."""
 
     interface = models.CharField(max_length=50, choices=INTERFACES)
     source = models.CharField(max_length=250)
@@ -41,11 +42,16 @@ class Source(models.Model):
         return f"""id: {self.id}, language: {self.language}, text: {self.text}"""
 
     def __repr__(self):
-        return f"""{self.__class__.__name__}(interface="{self.interface}", source="{self.source}, headline="{self.headline}", text="{self.text}", language="{self.language}", timestamp={self.timestamp})"""
+        return (
+            f"""{self.__class__.__name__}(interface="{self.interface}", """
+            f"""source="{self.source}, headline="{self.headline}", text="{self.text}\""""
+            f"""language="{self.language}", timestamp={self.timestamp})"""
+        )
 
 
 class Translation(models.Model):
-    """Represents a translation for a source. One source may have multiple translations."""
+    """Represents a translation for a source. One source may have
+    multiple translations."""
 
     language = models.CharField(max_length=2, choices=LANGUAGES)
     text = models.TextField()
@@ -57,4 +63,7 @@ class Translation(models.Model):
         return f"""id: {self.id}, language: {self.language}, text: {self.text}"""
 
     def __repr__(self):
-        return f"""{self.__class__.__name__}(language="{self.language}", text="{self.text}\""""
+        return (
+            f"""{self.__class__.__name__}(language="{self.language}", """
+            f"""text="{self.text}\""""
+        )

@@ -1,4 +1,5 @@
 [tool.black]
+preview = true
 line-length = 88
 target-version = ['py39']
 include = '\.pyi?$'
@@ -16,7 +17,6 @@ extend-exclude = '''
   | buck-out
   | build
   | dist
-  | tests/data
   | migrations
 )/
 '''
