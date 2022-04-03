@@ -1,5 +1,8 @@
 import datetime as dt
-import zoneinfo
+try:
+    import zoneinfo
+except ImportError:
+    from backports import zoneinfo
 from django.urls import reverse
 from django.contrib.auth import models
 from django.utils import timezone
