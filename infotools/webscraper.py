@@ -26,12 +26,12 @@ def get_latest_from_nbc():
         text = item.select('li.alacarte__item')[0].text
         item_dicts.append({
             "interface": "website",
-            "source": "liveuamap.com",
+            "source": "nbcnews.com",
             "section": item.select('h2.unibrow'),
             "headline": item.select('h2.alacarte__headline'),
             "text": text,
             "language": "en",
-            "timestamp": None,
+            "timestamp": None,  # theoretically information is there e.g.<span class="date_add">1 hour ago</span>
         })
 
     nbc_data = pd.DataFrame(item_dicts)
@@ -40,7 +40,6 @@ def get_latest_from_nbc():
     return nbc_data
 
 
-# result of this will need to be translated to english
 def get_latest_from_telegraf():
     url = 'https://telegraf.com.ua/specials/voyna-na-donbasse'
     res = requests.get(url)
@@ -53,10 +52,9 @@ def get_latest_from_telegraf():
         text = item.select('div.c-card-list__title')[0].text
         item_dicts.append({
             "interface": "website",
-            "source": "liveuamap.com",
-            "headline": None,
+            "source": "telegraf.com.ua",
             "text": text,
-            "language": "en",
+            "language": "ru",
             "timestamp": None,
         })
 
@@ -80,13 +78,37 @@ def get_latest_from_liveuamap():
             "interface": "website",
             "source": "liveuamap.com",
             "id": item.attrs['data-id'],
-            "headline": None,
             "text": text,
             "language": "en",
-            "timestamp": None,  # theoretically information is there e.g.<span class="date_add">1 hour ago</span>
+            "timestamp": None,
         })
 
     liveuamap_data = pd.DataFrame(item_dicts)
     liveuamap_data.to_csv('infotools/CSVs/scraped.csv')
 
     return liveuamap_data
+
+
+def get_latest_from_golos():
+    url = 'http://www.golos.com.ua/defense'
+    res = requests.get(url)
+    soup = BeautifulSoup(res.content, 'html.parser')
+
+    items = soup.select('div.articles-sub-list', limit=5)
+
+    item_dicts = []
+    for item in items:
+        text = item.select('li')[0].text
+        item_dicts.append({
+            "interface": "website",
+            "source": "golos.com",
+            "section": item.select('span.article-rubrick')[0].text,
+            "text": text,
+            "language": "uk",
+            "timestamp": None,
+        })
+
+    golos_data = pd.DataFrame(item_dicts)
+    golos_data.to_csv('infotools/CSVs/scraped.csv')
+
+    return golos_data
