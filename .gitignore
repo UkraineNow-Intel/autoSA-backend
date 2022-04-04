@@ -157,6 +157,9 @@ test-reports/
 
 # Django stuff:
 
+# server settings
+settings.ini
+
 # Scrapy stuff:
 .scrapy
 
