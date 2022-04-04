@@ -67,8 +67,6 @@ cache/
 input.py
 *.config
 log.txt
-flaskapp.sock
-.flaskapp.py.swp
 
 # Virtual environments
 venv
@@ -152,15 +150,15 @@ coverage.xml
 .hypothesis/
 .pytest_cache/
 cover/
+test-reports/
 
 # Translations
 *.mo
 
 # Django stuff:
 
-# Flask stuff:
-instance/
-.webassets-cache
+# server settings
+settings.ini
 
 # Scrapy stuff:
 .scrapy

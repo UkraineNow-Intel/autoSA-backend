@@ -47,7 +47,7 @@ TWITTER_SOURCE_ACCOUNTS = [
     "RFERL",
     "ukr_satflash",
     "PowerOutage_us",
-    "CAT_UXO"
+    "CAT_UXO",
 ]
 
 

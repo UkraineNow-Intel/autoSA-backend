@@ -1,0 +1,41 @@
+name: autosa-backend
+
+on:
+  pull_request:
+    paths-ignore:
+      - '**.md'
+      - '**.js'
+      - '**.html'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        python-version: [3.8, 3.9]
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install requirements
+        run: |
+          pip install -U pip setuptools wheel
+          pip install -r requirements.txt -r requirements-dev.txt --upgrade --upgrade-strategy only-if-needed
+
+      - name: Run unit tests
+        run: make test
+
+      - name: Run Black
+        run: make black
+
+      - name: Run pycodestyle
+        run: make pycodestyle
+
+      - name: Run flake8
+        run: make flake8

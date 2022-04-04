@@ -15,7 +15,17 @@ class SourceSerializer(TaggitSerializer, serializers.HyperlinkedModelSerializer)
 
     class Meta:
         model = Source
-        fields = ["interface", "source", "headline", "text", "language", "pinned", "timestamp", "tags", "translations"]
+        fields = [
+            "interface",
+            "source",
+            "headline",
+            "text",
+            "language",
+            "pinned",
+            "timestamp",
+            "tags",
+            "translations",
+        ]
 
     def create(self, validated_data):
         translations_data = validated_data.pop("translations")

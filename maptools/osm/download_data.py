@@ -8,11 +8,15 @@ from input import osmIDs
 
 osmIDs = osmIDs[:3000]
 overpass = Overpass()
-#result = overpass.query('area[name = "Україна"];way(area)["highway"~"^(motorway|trunk|primary|secondary)$"]; out;', timeout=10000)
-result = overpass.query('area[name = "Україна"];(way(area)["highway"~"^(motorway|trunk|primary|secondary)$"]; >;);', timeout=10000)
+# result = overpass.query('area[name = "Україна"];way(area)["highway"~"^(motorway|trunk|primary|secondary)$"]; out;', timeout=10000) # noqa
+result = overpass.query(
+    "area[name ="
+    ' "Україна"];(way(area)["highway"~"^(motorway|trunk|primary|secondary)$"]; >;);',
+    timeout=10000,
+)
 
 for element in result.elements():
-    print(element.tag('name'))
+    print(element.tag("name"))
 
 exit()
 
@@ -27,18 +31,15 @@ for way_id in osmIDs:
         query += "); out tags;"
         result = overpass.query(query)
         for element in result.elements():
-            print(element.tag('name'))
+            print(element.tag("name"))
         query = "way(id:"
 
 
 exit()
-from input import (
-    osmIDs,
-)  # input.py file in the same folder that just contains "osmIDs = [111111, 22223232, ...] "
 
 
 # sorted list as given
-# interesting_columns = ["osm_id", "smoothness", "highway", "bridge", "maxspeed", "maxheight", "maxaxleload", "lanes", "layer", "surface", "bicycle", "oneway", "name", "name:en", "name:uk", "name:ru", "lit", "destinatio", "destinatio_1", "destinatio_2", "destinatio_3", "destinatio_4", "destinatio_5", "turn:lanes", "highway:cl", "old_ref", "ref", "int_ref", "nat_ref", "hgv", "source:max", "highway:ca", "source:max_1", "placement", "embankment", "changeset", "timestamp", "user", "uid"]
+# interesting_columns = ["osm_id", "smoothness", "highway", "bridge", "maxspeed", "maxheight", "maxaxleload", "lanes", "layer", "surface", "bicycle", "oneway", "name", "name:en", "name:uk", "name:ru", "lit", "destinatio", "destinatio_1", "destinatio_2", "destinatio_3", "destinatio_4", "destinatio_5", "turn:lanes", "highway:cl", "old_ref", "ref", "int_ref", "nat_ref", "hgv", "source:max", "highway:ca", "source:max_1", "placement", "embankment", "changeset", "timestamp", "user", "uid"] # noqa
 
 # list with no tags
 # interesting_columns = ["osm_id", "changeset", "timestamp", "user", "uid"]
@@ -86,7 +87,7 @@ interesting_columns = [
     "uid",
 ]
 
-# as shapefiles only support 10 character column names, replace some tag names accordingly
+# as shapefiles only support 10 character column names, replace some tag names accordingly # noqa
 REPLACEMENTS = {
     ":": "_",
     "destination": "dst",
@@ -132,7 +133,8 @@ def query_osm(way_id):
 
 
 def get_all_fields(ids):
-    """returns a list of all fields (that are present in at least one of the given IDs)"""
+    """returns a list of all fields (that are present in at least
+    one of the given IDs)"""
     all_tag_fiels = set()
 
     prgs = Progress(len(ids))
@@ -154,7 +156,8 @@ def get_all_fields(ids):
 
 
 def append_fields_not_in_sorted_list():
-    """promps user if tags not in interesting_columns list should be appended to output as well"""
+    """promps user if tags not in interesting_columns list
+    should be appended to output as well"""
     all_fields = get_all_fields(osmIDs)
 
     fields_not_in_sorted_list = [
@@ -164,10 +167,11 @@ def append_fields_not_in_sorted_list():
         return all_fields
     print("------------------")
     print(
-        "These fields were not in the previous sorted list (interesting_columns), should they be appended?"
+        "These fields were not in the previous sorted list (interesting_columns),"
+        " should they be appended?"
     )
     print(fields_not_in_sorted_list)
-    append_fields = "Y" # input("Append new fields (Y/n)?")
+    append_fields = "Y"  # input("Append new fields (Y/n)?")
     append_fields = append_fields == "" or append_fields == "Y" or append_fields == "y"
 
     if append_fields:
@@ -183,7 +187,7 @@ def append_fields_not_in_sorted_list():
 all_fields = append_fields_not_in_sorted_list()
 
 # sort all tag fields:
-# all_fields = [osm_id, *[tags sorted alphabetically], "changeset", "timestamp", "user", "uid"]
+# all_fields = [osm_id, *[tags sorted alphabetically], "changeset", "timestamp", "user", "uid"] # noqa
 all_tag_fields = all_fields[1:-4]
 all_tag_fields.sort()
 all_fields = ["osm_id"] + all_tag_fields + ["changeset", "timestamp", "user", "uid"]

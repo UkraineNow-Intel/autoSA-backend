@@ -50,21 +50,23 @@ Tests should go in the `tests` directory.
 
 We suggest using `pytest`.
 
-Run tests with:
+Run all tests with:
 
 ```shell
-python manage.py test tests
+make test
+```
+
+Or, to be more selective, use:
+
+```shell
+python manage.py test [PATH] [OPTIONS...]
 ```
 
 * Code review
 
-We use `black` to enforce the uniform coding style.
+We use `black` to enforce the uniform coding style. Run `black .` before submitting a PR.
 
 Request a review on your PR before merging. 
-
-* Other guidelines
-
-TBD
 
 ### Who do I talk to? ###
 
