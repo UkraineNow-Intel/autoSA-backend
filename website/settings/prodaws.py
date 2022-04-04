@@ -1,11 +1,16 @@
 from decouple import config
 from .base import *
+import os
 
 SECRET_KEY = config("SECRET_KEY")
 
 DEBUG = False
 
 ALLOWED_HOSTS = ["*"]
+
+STATICFILES_DIRS = [BASE_DIR / "static"]
+STATIC_URL = "static/"
+STATIC_ROOT = "/home/ubuntu/application/djangostaticfiles/static/"
 
 LOGGING = {
     "version": 1,
