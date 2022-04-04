@@ -18,4 +18,8 @@ router.register("translations", views.TranslationViewSet)
 urlpatterns = [
     path("", include(router.urls)),
     path("api-auth/", include("rest_framework.urls", namespace="rest_framework")),
+    path("csrf/", views.get_csrf, name="api-csrf"),
+    path("login/", views.login_view, name="api-login"),
+    path("logout/", views.logout_view, name="api-logout"),
+    path("whoami/", views.WhoAmIView.as_view(), name="api-whoami"),  # new
 ]
