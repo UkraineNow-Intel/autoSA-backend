@@ -16,6 +16,7 @@ class SourceSerializer(TaggitSerializer, serializers.HyperlinkedModelSerializer)
     class Meta:
         model = Source
         fields = [
+            "id",
             "interface",
             "source",
             "headline",
