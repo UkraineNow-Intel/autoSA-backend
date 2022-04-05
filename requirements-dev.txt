@@ -1,4 +1,6 @@
-black
-pycodestyle
-flake8
-pytest
+black>=22.3.0
+factory_boy>=3.2.1
+flake8>=4.0.1
+pycodestyle>=2.8.0
+pytest>=7.1.1
+pytest-django>=4.5.2

@@ -7,7 +7,7 @@ pycodestyle:
 flake8:
 	flake8 .
 test:
-	@python manage.py test --verbosity 2
+	py.test -v
 
 run:
 	@python manage.py runserver
