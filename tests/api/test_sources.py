@@ -14,6 +14,7 @@ import pytest
 from . import factories
 
 pytestmark = pytest.mark.integration
+TZ_UTC = zoneinfo.ZoneInfo("UTC")
 
 
 class SourceTests(APITestCase):
@@ -52,33 +53,58 @@ class SourceTests(APITestCase):
                 self.assertEqual(data[key], actual_value)
 
     def test_update_source(self):
-        url = reverse("source-list")
-        tz = zoneinfo.ZoneInfo("UTC")
+        source = factories.SourceFactory(
+            timestamp=timezone.now(),
+            pinned=True,
+        )
+        url = reverse("source-detail", kwargs={"pk": source.id})
         data = {
-            "tags": ["tag1", "tag2"],
+            "tags": ["tag1"],
             "interface": "website",
             "source": "@Blah",
             "headline": "",
             "text": "Щось трапилося",
             "language": "ua",
-            "timestamp": dt.datetime(2022, 4, 1, 20, 55, tzinfo=tz),
+            "timestamp": dt.datetime(2022, 4, 1, 20, 55, tzinfo=TZ_UTC),
             "pinned": True,
             "translations": [],
         }
-        response = self.client.post(url, data, format="json")
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        response = self.client.put(url, data, pk=1, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(Source.objects.count(), 1)
-        self.assertEqual(Tag.objects.count(), 2)
-        self.assertEqual(TaggedItem.objects.count(), 2)
-        actual = Source.objects.get()
-        for key in data.keys():
-            actual_value = getattr(actual, key)
+        actual = Source.objects.first()
+        for key, value in data.items():
             if key == "tags":
-                self.assertCountEqual(data[key], list(actual.tags.names()))
+                actual_value = list(actual.tags.names())
+                self.assertCountEqual(value, actual_value)
             elif key == "translations":
-                continue
+                pass
             else:
-                self.assertEqual(data[key], actual_value)
+                actual_value = getattr(actual, key)
+                self.assertEqual(value, actual_value)
+
+    def test_partial_update_source(self):
+        source = factories.SourceFactory(
+            timestamp=timezone.now(),
+            pinned=True,
+        )
+        url = reverse("source-detail", kwargs={"pk": source.id})
+        data = {
+            "text": "Что-то случилось",
+            "language": "ru",
+        }
+        response = self.client.patch(url, data, pk=1, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(Source.objects.count(), 1)
+        actual = Source.objects.first()
+        # these should change
+        for key, value in data.items():
+            actual_value = getattr(actual, key)
+            self.assertEqual(value, actual_value)
+        # these should be preserved
+        for key in ["interface", "source", "headline", "pinned", "timestamp"]:
+            self.assertEqual(getattr(source, key), getattr(actual, key))
+        self.assertEqual(list(source.tags.names()), list(actual.tags.names()))
 
     def test_list_sources(self):
         """Retrieve sources"""
