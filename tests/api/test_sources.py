@@ -101,7 +101,7 @@ class SourceTests(APITestCase):
         data = {
             "text": "Что-то случилось",
             "language": "ru",
-            "translations": [{"language": "en", "text": "Something happened"}]
+            "translations": [{"language": "en", "text": "Something happened"}],
         }
         response = self.client.patch(url, data, pk=1, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -128,7 +128,9 @@ class SourceTests(APITestCase):
             pinned=True,
         )
         translation_data = [{"language": "en", "text": "Something happened"}]
-        source.translations.set([Translation(**td) for td in translation_data], bulk=False)
+        source.translations.set(
+            [Translation(**td) for td in translation_data], bulk=False
+        )
         url = reverse("source-list")
         response = self.client.get(url, format="json")
         expected = {
@@ -140,7 +142,7 @@ class SourceTests(APITestCase):
             "language": "en",
             "timestamp": "2022-04-01T20:55:00Z",
             "pinned": True,
-            "translations": [{"language": "en", "text": "Something happened"}]
+            "translations": [{"language": "en", "text": "Something happened"}],
         }
         sources = response.json()
         self.assertEqual(response.status_code, status.HTTP_200_OK)
