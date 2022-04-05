@@ -6,7 +6,7 @@ from .models import Source, Translation
 class TranslationSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Translation
-        fields = "__all__"
+        fields = ["id", "source_id", "language", "text"]
 
 
 class SourceSerializer(TaggitSerializer, serializers.HyperlinkedModelSerializer):
@@ -38,14 +38,16 @@ class SourceSerializer(TaggitSerializer, serializers.HyperlinkedModelSerializer)
 
     def update(self, instance, validated_data):
         """Have to update translations if provided."""
+        has_translations = False
         translations_data = None
         if "translations" in validated_data:
             translations_data = validated_data.pop("translations")
+            has_translations = True
         instance = super().update(instance, validated_data)
-        if translations_data:
+        if has_translations:
             new_translations = [
                 Translation(source=instance, **translation_data)
                 for translation_data in translations_data
             ]
-            instance.translations.set(new_translations)
+            instance.translations.set(new_translations, bulk=False)
         return instance
