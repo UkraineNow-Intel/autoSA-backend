@@ -3,8 +3,21 @@ import geopy
 import numpy as np
 import pandas as pd
 from infotools.location_parsing import extract_locations_for_dataframe
+import pytest
+
+pytestmark = pytest.mark.integration
+
+try:
+    import spacy
+
+    spacy.load("en_core_web_sm")
+    spacy.load("ru_core_news_sm")
+    SPACY_MODELS_AVAILABLE = True
+except OSError:
+    SPACY_MODELS_AVAILABLE = False
 
 
+@pytest.mark.skipif(~SPACY_MODELS_AVAILABLE, reason="Spacy models not available")
 def test_extract_locations_for_dataframe():
     dicts = [
         {

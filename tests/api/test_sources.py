@@ -5,24 +5,33 @@ try:
 except ImportError:
     from backports import zoneinfo
 from django.urls import reverse
-from django.contrib.auth import models
 from django.utils import timezone
 from rest_framework import status
 from rest_framework.test import APITestCase
-from taggit.models import Tag
-from api.models import Source, INTERFACE_API, LANGUAGE_EN
+from taggit.models import Tag, TaggedItem
+from api.models import Source, Translation
+import pytest
+from . import factories
+
+pytestmark = pytest.mark.integration
+TZ_UTC = zoneinfo.ZoneInfo("UTC")
 
 
 class SourceTests(APITestCase):
     def setUp(self) -> None:
-        user = models.User.objects.create(
-            username="apitest", password="blah", is_superuser=True
-        )
+        user = factories.UserFactory()
         self.client.force_authenticate(user=user)
+
+    def compare_translations(self, expected_translations, actual_translations):
+        for i, actual_translation in enumerate(actual_translations):
+            expected_translation = expected_translations[i]
+            for k in expected_translation:
+                self.assertEqual(expected_translation[k], actual_translation[k])
 
     def test_create_source(self):
         """Create a new source"""
         url = reverse("source-list")
+        tz = zoneinfo.ZoneInfo("UTC")
         data = {
             "tags": ["tag1", "tag2"],
             "interface": "website",
@@ -30,70 +39,132 @@ class SourceTests(APITestCase):
             "headline": "",
             "text": "Щось трапилося",
             "language": "ua",
-            "timestamp": "2022-04-01T20:25:00Z",
-            "pinned": "true",
-            "translations": [],
+            "timestamp": dt.datetime(2022, 4, 1, 20, 55, tzinfo=tz),
+            "pinned": True,
+            "translations": [{"language": "en", "text": "Something happened"}],
         }
         response = self.client.post(url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Source.objects.count(), 1)
         self.assertEqual(Tag.objects.count(), 2)
+        self.assertEqual(TaggedItem.objects.count(), 2)
+        self.assertEqual(Translation.objects.count(), 1)
         actual = Source.objects.get()
-        for key in ["interface", "source", "headline", "text", "language"]:
+        for key in data.keys():
             actual_value = getattr(actual, key)
-            self.assertEqual(data[key], actual_value)
-        self.assertCountEqual(data["tags"], list(actual.tags.names()))
+            if key == "tags":
+                self.assertCountEqual(data[key], list(actual.tags.names()))
+            elif key == "translations":
+                actual_translations = list(actual.translations.values())
+                self.compare_translations(data["translations"], actual_translations)
+            else:
+                self.assertEqual(data[key], actual_value)
+
+    def test_update_source(self):
+        source = factories.SourceFactory(
+            timestamp=timezone.now(),
+            pinned=True,
+        )
+        url = reverse("source-detail", kwargs={"pk": source.id})
+        data = {
+            "tags": ["tag1"],
+            "interface": "website",
+            "source": "@Blah",
+            "headline": "",
+            "text": "Щось трапилося",
+            "language": "ua",
+            "timestamp": dt.datetime(2022, 4, 1, 20, 55, tzinfo=TZ_UTC),
+            "pinned": True,
+            "translations": [{"language": "en", "text": "Something happened"}],
+        }
+        response = self.client.put(url, data, pk=1, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(Source.objects.count(), 1)
+        actual = Source.objects.first()
+        for key, value in data.items():
+            if key == "tags":
+                actual_value = list(actual.tags.names())
+                self.assertCountEqual(value, actual_value)
+            elif key == "translations":
+                actual_translations = list(actual.translations.values())
+                self.compare_translations(data["translations"], actual_translations)
+            else:
+                actual_value = getattr(actual, key)
+                self.assertEqual(value, actual_value)
+
+    def test_partial_update_source(self):
+        source = factories.SourceFactory(
+            timestamp=timezone.now(),
+            pinned=True,
+        )
+        url = reverse("source-detail", kwargs={"pk": source.id})
+        data = {
+            "text": "Что-то случилось",
+            "language": "ru",
+            "translations": [{"language": "en", "text": "Something happened"}],
+        }
+        response = self.client.patch(url, data, pk=1, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(Source.objects.count(), 1)
+        actual = Source.objects.first()
+        # these should change
+        for key, value in data.items():
+            if key == "translations":
+                actual_translations = list(actual.translations.values())
+                self.compare_translations(data["translations"], actual_translations)
+            else:
+                actual_value = getattr(actual, key)
+                self.assertEqual(value, actual_value)
+        # these should be preserved
+        for key in ["interface", "source", "headline", "pinned", "timestamp"]:
+            self.assertEqual(getattr(source, key), getattr(actual, key))
+        self.assertEqual(list(source.tags.names()), list(actual.tags.names()))
 
     def test_list_sources(self):
         """Retrieve sources"""
         tz = zoneinfo.ZoneInfo("UTC")
-        source = Source.objects.create(
-            interface=INTERFACE_API,
-            source="www.example.com",
-            headline="Test headline",
-            text="Text from website",
-            language=LANGUAGE_EN,
+        source = factories.SourceFactory(
             timestamp=dt.datetime(2022, 4, 1, 20, 55, tzinfo=tz),
             pinned=True,
         )
-        source.tags.add("tag1", "tag2")
+        translation_data = [{"language": "en", "text": "Something happened"}]
+        source.translations.set(
+            [Translation(**td) for td in translation_data], bulk=False
+        )
         url = reverse("source-list")
         response = self.client.get(url, format="json")
         expected = {
             "tags": ["tag1", "tag2"],
             "interface": "api",
-            "source": "www.example.com",
+            "source": "http://www.example.com",
             "headline": "Test headline",
-            "text": "Text from website",
+            "text": "Something happened",
             "language": "en",
             "timestamp": "2022-04-01T20:55:00Z",
             "pinned": True,
-            "translations": [],
+            "translations": [{"language": "en", "text": "Something happened"}],
         }
         sources = response.json()
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEquals(len(sources), 1)
+        self.assertEqual(len(sources), 1)
         actual = sources[0]
-        self.assertCountEqual(expected.keys(), actual.keys())
-        for key in ["interface", "source", "headline", "text", "language", "pinned"]:
-            self.assertEqual(expected[key], actual[key])
-        self.assertCountEqual(expected["tags"], actual["tags"])
+        for key in expected.keys():
+            if key == "tags":
+                self.assertCountEqual(expected[key], actual[key])
+            elif key == "translations":
+                self.compare_translations(expected["translations"], actual[key])
+            else:
+                self.assertEqual(expected[key], actual[key])
 
     def test_delete_source(self):
         """Delete a source"""
-        source = Source(
-            interface=INTERFACE_API,
-            source="www.example.com",
-            headline="Test headline",
-            text="Text from website",
-            language=LANGUAGE_EN,
-            tags=["tag1", "tag2"],
+        source = factories.SourceFactory(
             timestamp=timezone.now(),
             pinned=True,
         )
-        source.save()
         url = reverse("source-detail", kwargs={"pk": source.id})
         response = self.client.delete(url, pk=1, format="json")
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(Source.objects.count(), 0)
-        self.assertEqual(Tag.objects.count(), 0)
+        self.assertEqual(Tag.objects.count(), 2)
+        self.assertEqual(TaggedItem.objects.count(), 0)
