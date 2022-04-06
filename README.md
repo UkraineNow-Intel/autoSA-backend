@@ -1,10 +1,10 @@
 # AutoSA (Automated Situational Awareness) Backend
 
-This is the repo of the AutoSA team. It is deployed on AWS using flask, gunicore & nginx.
+This is the repo of the AutoSA team. It is deployed on AWS using Django.
 
-There is an internal list of commonly used sources for intelligence - in the repo, we will access these sources to make information more accessible (e.g. mapped or searchable) for the intelligence team.
+There is an internal list of commonly used sources for intelligence - in the repo, we will access these sources to make information more accessible (e.g. searchable, filtered or mapped (#future)) for the intelligence team.
 
-Current tasks can be found on Jira, but also feel free to ask in our group chat if you need any assistance.
+Current tasks can be found in Projects, but also feel free to ask in our group chat if you need any assistance.
 
 ## Requirements
 
