@@ -8,8 +8,18 @@ from django.middleware.csrf import get_token
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.decorators.http import require_POST
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, DjangoModelPermissions
 from rest_framework.views import APIView
+from django.contrib.auth.models import Permission
+
+# Returns a list of strings of all user permissions
+def getPermissionsForUser(user):
+    if user.is_superuser:
+        return [str(permission) for permission in Permission.objects.all()]
+    current_permissions = user.user_permissions.all() | Permission.objects.filter(
+        group__user=user
+    )
+    return [str(permission) for permission in current_permissions]
 
 
 class WhoAmIView(APIView):
@@ -18,8 +28,13 @@ class WhoAmIView(APIView):
 
     @staticmethod
     def get(request, format=None):
+        current_permissions_list = getPermissionsForUser(request.user)
         return JsonResponse(
-            {"username": request.user.username, "isAuthenticated": True}
+            {
+                "username": request.user.username,
+                "isAuthenticated": True,
+                "permissions": current_permissions_list,
+            }
         )
 
 
@@ -47,8 +62,13 @@ def login_view(request):
         return JsonResponse({"detail": "Invalid credentials."}, status=400)
 
     login(request, user)
+    current_permissions_list = getPermissionsForUser(user)
     return JsonResponse(
-        {"detail": "Successfully logged in.", "username": request.user.username}
+        {
+            "detail": "Successfully logged in.",
+            "username": request.user.username,
+            "permissions": current_permissions_list,
+        }
     )
 
 
@@ -65,6 +85,8 @@ class SourceViewSet(viewsets.ModelViewSet):
 
     queryset = Source.objects.all()
     serializer_class = SourceSerializer
+    authentication_classes = [SessionAuthentication, BasicAuthentication]
+    permission_classes = [DjangoModelPermissions]
 
 
 class TranslationViewSet(viewsets.ModelViewSet):
@@ -72,3 +94,5 @@ class TranslationViewSet(viewsets.ModelViewSet):
 
     queryset = Translation.objects.all()
     serializer_class = TranslationSerializer
+    authentication_classes = [SessionAuthentication, BasicAuthentication]
+    permission_classes = [DjangoModelPermissions]
