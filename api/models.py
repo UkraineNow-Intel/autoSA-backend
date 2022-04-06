@@ -38,13 +38,18 @@ class Source(models.Model):
     timestamp = models.DateTimeField(default=timezone.now)
     tags = TaggableManager(blank=True)
 
+    class Meta:
+        indexes = [
+            models.Index(fields=["timestamp"], name="timestamp_idx"),
+        ]
+
     def __str__(self):
         return f"""id: {self.id}, language: {self.language}, text: {self.text}"""
 
     def __repr__(self):
         return (
             f"""{self.__class__.__name__}(interface="{self.interface}", """
-            f"""source="{self.source}, headline="{self.headline}", text="{self.text}\""""
+            f"""source="{self.source}, headline="{self.headline}", text="{self.text}\", """
             f"""language="{self.language}", timestamp={self.timestamp})"""
         )
 
@@ -66,4 +71,34 @@ class Translation(models.Model):
         return (
             f"""{self.__class__.__name__}(language="{self.language}", """
             f"""text="{self.text}\""""
+        )
+
+
+class Location(models.Model):
+    """Represents a geographic location. One source may have
+    multiple locations."""
+
+    name = models.CharField(max_length=250)
+    latitude = models.FloatField()
+    longitude = models.FloatField()
+    # in Factal: SRID=4326;POINT (30.7233095 46.482526)
+    point = models.CharField(max_length=100, blank=True)
+    # in Factal: SRID=4326;POLYGON ((30.6116849 46.319522, 30.6116849 46.60042199999999, 30.8118901 46.60042199999999, 30.8118901 46.319522, 30.6116849 46.319522)) # noqa
+    bounding_box = models.TextField(blank=True)
+    source = models.ForeignKey(
+        Source, on_delete=models.CASCADE, related_name="locations"
+    )
+
+    class Meta:
+        indexes = [
+            models.Index(fields=["name"], name="name_idx"),
+        ]
+
+    def __str__(self):
+        return f"""id: {self.id}, name: {self.name}, latitude: {self.latitude}, longitude: {self.longitude}"""
+
+    def __repr__(self):
+        return (
+            f"""{self.__class__.__name__}(name="{self.name}", """
+            f"""latitude={self.latitude}, longitude={self.longitude}"""
         )

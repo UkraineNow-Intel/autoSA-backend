@@ -1,6 +1,6 @@
 from rest_framework import viewsets
-from .serializers import SourceSerializer, TranslationSerializer
-from .models import Source, Translation
+from .serializers import SourceSerializer, TranslationSerializer, LocationSerializer
+from .models import Source, Translation, Location
 import json
 from django.contrib.auth import authenticate, login, logout
 from django.http import JsonResponse
@@ -100,3 +100,10 @@ class TranslationViewSet(viewsets.ModelViewSet):
     serializer_class = TranslationSerializer
     authentication_classes = [SessionAuthentication, BasicAuthentication]
     permission_classes = [DjangoModelPermissions]
+
+
+class LocationViewSet(viewsets.ModelViewSet):
+    """List or retrieve locations"""
+
+    queryset = Location.objects.all()
+    serializer_class = LocationSerializer
