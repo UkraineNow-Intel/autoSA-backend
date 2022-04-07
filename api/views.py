@@ -16,12 +16,15 @@ from django.contrib.auth.models import Permission
 def getPermissionsForUser(user):
     """
     Returns a list of all permissions for a user, e.g.:
-    `[{id: 1, name 'Can log entry', content_type_id: 1, codename: 'add_logentry'}, ...]` 
+    `[{id: 1, name 'Can log entry', content_type_id: 1, codename: 'add_logentry'}, ...]`
     """
     if user.is_superuser:
         return list(Permission.objects.all().values())
-    permissions = user.user_permissions.all() | Permission.objects.filter(group__user=user)
+    permissions = user.user_permissions.all() | Permission.objects.filter(
+        group__user=user
+    )
     return list(permissions.values())
+
 
 class WhoAmIView(APIView):
     authentication_classes = [SessionAuthentication, BasicAuthentication]
