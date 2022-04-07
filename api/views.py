@@ -14,46 +14,14 @@ from django.contrib.auth.models import Permission
 
 
 def getPermissionsForUser(user):
-    """Returns a list of all permissions for a user"""
+    """
+    Returns a list of all permissions for a user, e.g.:
+    `[{id: 1, name 'Can log entry', content_type_id: 1, codename: 'add_logentry'}, ...]` 
+    """
     if user.is_superuser:
-        return Permission.objects.all()
-    return user.user_permissions.all() | Permission.objects.filter(group__user=user)
-
-
-def getPermissionsAsDictForUser(user):
-    """
-    returns permissions of a user as dictionary. instead of returning the strings:
-    ```
-    api | source  | create
-    api | source  | delete
-    api | translations  | create
-    api | translations  | delete
-    admin | log | Can add log entry
-    ```
-
-    it instead returns the permissions as dictionary:
-    ```
-    {
-        api: {
-            source: ["create", "delete"],
-            translations: ["create", "delete"]
-        },
-        admin: {
-            log: ["Can add log entry"]
-        }
-    }
-    ```
-    """
-    permission_dict = {}
-    for perm in getPermissionsForUser(user):
-        permHierarchy = str(perm).split(" | ")
-        if permHierarchy[0] not in permission_dict:
-            permission_dict[permHierarchy[0]] = {}
-        if permHierarchy[1] not in permission_dict[permHierarchy[0]]:
-            permission_dict[permHierarchy[0]][permHierarchy[1]] = []
-        permission_dict[permHierarchy[0]][permHierarchy[1]].append(permHierarchy[2])
-    return permission_dict
-
+        return list(Permission.objects.all().values())
+    permissions = user.user_permissions.all() | Permission.objects.filter(group__user=user)
+    return list(permissions.values())
 
 class WhoAmIView(APIView):
     authentication_classes = [SessionAuthentication, BasicAuthentication]
@@ -61,7 +29,7 @@ class WhoAmIView(APIView):
 
     @staticmethod
     def get(request, format=None):
-        current_permissions = getPermissionsAsDictForUser(request.user)
+        current_permissions = getPermissionsForUser(request.user)
         return JsonResponse(
             {
                 "username": request.user.username,
@@ -95,7 +63,7 @@ def login_view(request):
         return JsonResponse({"detail": "Invalid credentials."}, status=400)
 
     login(request, user)
-    current_permissions = getPermissionsAsDictForUser(user)
+    current_permissions = getPermissionsForUser(request.user)
     return JsonResponse(
         {
             "detail": "Successfully logged in.",
