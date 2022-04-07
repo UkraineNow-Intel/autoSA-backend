@@ -8,7 +8,8 @@ charset-normalizer==2.0.12
 click==8.0.4
 colorama==0.4.4
 cycler==0.11.0
-Django==4.0.3
+Django==3.2.12
+django-celery-beat>=2.2.1
 django-extensions==3.1.5
 django-storages==1.12.3
 django-taggit==2.1.0
