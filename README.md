@@ -46,7 +46,11 @@ python manage.py runserver
 
 To schedule background tasks, we use [Celery](https://docs.celeryq.dev/en/stable/index.html), [django-celery-beat](https://django-celery-beat.readthedocs.io/en/latest/), and [Redis](https://redis.io).
 
-If you're working on background tasks, such as [api tasks](api/tasks.py), you'll have to [install Redis](https://redis.io/docs/getting-started/#install-redis) and run three additional processes:
+Note: `django-celery-beat` is included in `requirements.txt`, but after it's installed, you also need to run migrations:
+
+```python manage.py migrate django_celery_beat```
+
+If you're working on background tasks, such as [api tasks](api/tasks.py), you'll also have to [install Redis](https://redis.io/docs/getting-started/#install-redis) and run three additional processes:
 
 * Redis, for storing tasks and exchanging messages.
 * Celery worker(s), for performing tasks.
