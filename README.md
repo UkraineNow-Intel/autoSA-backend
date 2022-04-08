@@ -86,6 +86,13 @@ python manage.py test [PATH] [OPTIONS...]
 
 We use `black` to enforce the uniform coding style. Run `black .` before submitting a PR.
 
+Before you commit, please:
+
+```shell
+make black
+make lint
+```
+
 Request a review on your PR before merging. 
 
 ### Who do I talk to? ###
