@@ -42,6 +42,26 @@ python manage.py createsuperuser --email admin@example.com --username admin
 python manage.py runserver
 ```
 
+## Background tasks
+
+To schedule background tasks, we use [Celery](https://docs.celeryq.dev/en/stable/index.html), [django-celery-beat](https://django-celery-beat.readthedocs.io/en/latest/), and [Redis](https://redis.io).
+
+If you're working on background tasks, such as [api tasks](api/tasks.py), you'll have to [install Redis](https://redis.io/docs/getting-started/#install-redis) and run three additional processes:
+
+* Redis, for storing tasks and exchanging messages.
+* Celery worker(s), for performing tasks.
+* Celery beat, for scheduling tasks.
+
+You can run them in separate terminal windows (or tabs in screen session).
+
+For exact commands see [Procfile.dev](Procfile.dev).
+
+Note: Django does not know how to use a `Procfile` (Heroku does). I added it here only for documenting commands that we need for `dev` and `prod`.
+
+There is one example task in [api/tasks.py](api/tasks.py).
+
+It is scheduled (commented out) in [website/celery.py](website/celery.py).
+
 ### Contribution guidelines ###
 
 * Writing tests
