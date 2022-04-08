@@ -47,7 +47,7 @@ class SourceTests(APITestCase):
                     "name": "Somewhere",
                     "latitude": 50.0,
                     "longitude": 50.0,
-                    "point": "SRID=4326;POINT (30.7233095 46.482526)"
+                    "point": "SRID=4326;POINT (30.7233095 46.482526)",
                 }
             ],
         }
@@ -90,7 +90,7 @@ class SourceTests(APITestCase):
                     "name": "Somewhere",
                     "latitude": 50.0,
                     "longitude": 50.0,
-                    "point": "SRID=4326;POINT (30.7233095 46.482526)"
+                    "point": "SRID=4326;POINT (30.7233095 46.482526)",
                 }
             ],
         }
@@ -126,7 +126,7 @@ class SourceTests(APITestCase):
                     "name": "Somewhere",
                     "latitude": 50.0,
                     "longitude": 50.0,
-                    "point": "SRID=4326;POINT (30.7233095 46.482526)"
+                    "point": "SRID=4326;POINT (30.7233095 46.482526)",
                 }
             ],
         }
@@ -160,7 +160,7 @@ class SourceTests(APITestCase):
                 "name": "Somewhere",
                 "latitude": 50.0,
                 "longitude": 50.0,
-                "point": "SRID=4326;POINT (30.7233095 46.482526)"
+                "point": "SRID=4326;POINT (30.7233095 46.482526)",
             }
         ]
         source.translations.set(
