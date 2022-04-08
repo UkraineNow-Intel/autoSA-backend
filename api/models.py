@@ -49,8 +49,9 @@ class Source(models.Model):
     def __repr__(self):
         return (
             f"""{self.__class__.__name__}(interface="{self.interface}", """
-            f"""source="{self.source}, headline="{self.headline}", text="{self.text}\", """
-            f"""language="{self.language}", timestamp={self.timestamp})"""
+            f"""source="{self.source}, headline="{self.headline}\"""",
+            f"""text="{self.text}\", language="{self.language}", """,
+            f"""timestamp={self.timestamp})""",
         )
 
 
@@ -95,7 +96,10 @@ class Location(models.Model):
         ]
 
     def __str__(self):
-        return f"""id: {self.id}, name: {self.name}, latitude: {self.latitude}, longitude: {self.longitude}"""
+        return (
+            f"""id: {self.id}, name: {self.name}, latitude: {self.latitude}, """,
+            f"""longitude: {self.longitude}""",
+        )
 
     def __repr__(self):
         return (
