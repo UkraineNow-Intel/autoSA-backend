@@ -2,7 +2,7 @@ import datetime as dt
 
 try:
     import zoneinfo
-except ImportError:
+except (ImportError, ModuleNotFoundError):
     from backports import zoneinfo
 from django.urls import reverse
 from django.utils import timezone
