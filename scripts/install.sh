@@ -6,7 +6,7 @@ POSTGRES_VERSION="${POSTGRES_VERSION:-13.4}"
 # install geospatial libraries
 case $(uname | tr '[:upper:]' '[:lower:]') in
   linux*)
-    sudo apt-get install postgresql-"POSTGRES_VERSION", postgresql-"POSTGRES_VERSION"-postgis, postgresql-server-dev-"POSTGRES_VERSION", python-psycopg2
+    sudo apt-get install postgresql-"POSTGRES_VERSION", postgresql-"POSTGRES_VERSION"-postgis, postgresql-server-dev-"POSTGRES_VERSION"
     sudo apt-get install binutils libproj-dev gdal-bin
     ;;
   darwin*)

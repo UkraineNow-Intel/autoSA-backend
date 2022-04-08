@@ -39,6 +39,7 @@ OSMPythonTools==0.3.4
 packaging==21.3
 pandas==1.4.1
 Pillow==9.0.1
+psycopg2>=2.9.3,<3.0.0
 pybind11==2.9.1
 pyparsing==3.0.7
 pyshp==2.2.0

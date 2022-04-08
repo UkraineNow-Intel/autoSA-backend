@@ -12,19 +12,16 @@ Current tasks can be found in Projects, but also feel free to ask in our group c
 
 ## How do I get set up? ###
 
-We have a simple install script:
+We have scripts to help with installation:
 
 ```shell
+# installs required OS and Python packages
 ./scripts/install.sh
+# creates Postgresql database and user
+./scripts/install_database.sh
 ```
 
-It can accept Postgres version to install, for example:
-
-```shell
-POSTGRES_VERSION=14.2 ./scripts/install.sh
-```
-
-It doesn't install any optional reqs or creates any users right now.
+Optional steps that are not included in those scripts:
 
 It's always a good idea to create a virtualenv for every repository.
 
@@ -71,13 +68,7 @@ pip install -r requirements.txt -r requirements-dev.txt -U --upgrade-strategy on
 python -m spacy download en_core_web_sm ru_core_news_sm
 ```
 
-4. Run migrations
-
-```shell
-python manage.py migrate
-```
-
-5. Create a user that can log in to the website. You will be prompted for password:
+2. Create a user that can log in to the website. You will be prompted for password:
 
 ```shell
 python manage.py createsuperuser --email admin@example.com --username admin

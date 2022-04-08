@@ -1,4 +1,4 @@
-from django.db import models
+from django.contrib.gis.db import models
 from django.utils import timezone
 from taggit.managers import TaggableManager
 
@@ -83,9 +83,9 @@ class Location(models.Model):
     latitude = models.FloatField()
     longitude = models.FloatField()
     # in Factal: SRID=4326;POINT (30.7233095 46.482526)
-    point = models.CharField(max_length=100, blank=True)
+    point = models.PointField(blank=True, null=True)
     # in Factal: SRID=4326;POLYGON ((30.6116849 46.319522, 30.6116849 46.60042199999999, 30.8118901 46.60042199999999, 30.8118901 46.319522, 30.6116849 46.319522)) # noqa
-    bounding_box = models.TextField(blank=True)
+    polygon = models.PolygonField(blank=True, null=True)
     source = models.ForeignKey(
         Source, on_delete=models.CASCADE, related_name="locations"
     )
