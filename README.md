@@ -12,6 +12,37 @@ Current tasks can be found in Projects, but also feel free to ask in our group c
 
 ## How do I get set up? ###
 
+We have a simple install script:
+
+```shell
+./scripts/install.sh
+```
+
+It can accept Postgres version to install, for example:
+
+```shell
+POSTGRES_VERSION=14.2 ./scripts/install.sh
+```
+
+It doesn't install any optional reqs or creates any users right now.
+
+It's always a good idea to create a virtualenv for every repository.
+
+If you're already using conda, pyenv or pipenv, you know how to create one.
+
+Or just create one with python + virtualenv:
+
+```shell
+python3 -m venv ~/.venvs/autosa-backend
+```
+
+Then activate it:
+
+```shell
+source ~/.venvs/autosa-backend/bin/activate
+```
+
+1. Now you can install requirements into the venv:
 It's always a good idea to create a virtualenv for every repository.
 
 If you're already using conda, pyenv or pipenv, you know how to create one.
