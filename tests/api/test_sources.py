@@ -42,7 +42,14 @@ class SourceTests(APITestCase):
             "timestamp": dt.datetime(2022, 4, 1, 20, 55, tzinfo=tz),
             "pinned": True,
             "translations": [{"language": "en", "text": "Something happened"}],
-            "locations": [{"name": "Somewhere", "latitude": 50.0, "longitude": 50.0}],
+            "locations": [
+                {
+                    "name": "Somewhere",
+                    "latitude": 50.0,
+                    "longitude": 50.0,
+                    "point": "SRID=4326;POINT (30.7233095 46.482526)"
+                }
+            ],
         }
         response = self.client.post(url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
@@ -78,7 +85,14 @@ class SourceTests(APITestCase):
             "timestamp": dt.datetime(2022, 4, 1, 20, 55, tzinfo=TZ_UTC),
             "pinned": True,
             "translations": [{"language": "en", "text": "Something happened"}],
-            "locations": [{"name": "Somewhere", "latitude": 50.0, "longitude": 50.0}],
+            "locations": [
+                {
+                    "name": "Somewhere",
+                    "latitude": 50.0,
+                    "longitude": 50.0,
+                    "point": "SRID=4326;POINT (30.7233095 46.482526)"
+                }
+            ],
         }
         response = self.client.put(url, data, pk=1, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -107,7 +121,14 @@ class SourceTests(APITestCase):
             "text": "Что-то случилось",
             "language": "ru",
             "translations": [{"language": "en", "text": "Something happened"}],
-            "locations": [{"name": "Somewhere", "latitude": 50.0, "longitude": 50.0}],
+            "locations": [
+                {
+                    "name": "Somewhere",
+                    "latitude": 50.0,
+                    "longitude": 50.0,
+                    "point": "SRID=4326;POINT (30.7233095 46.482526)"
+                }
+            ],
         }
         response = self.client.patch(url, data, pk=1, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -134,7 +155,14 @@ class SourceTests(APITestCase):
             pinned=True,
         )
         translation_data = [{"language": "en", "text": "Something happened"}]
-        location_data = [{"name": "Somewhere", "latitude": 50.0, "longitude": 50.0}]
+        location_data = [
+            {
+                "name": "Somewhere",
+                "latitude": 50.0,
+                "longitude": 50.0,
+                "point": "SRID=4326;POINT (30.7233095 46.482526)"
+            }
+        ]
         source.translations.set(
             [Translation(**td) for td in translation_data], bulk=False
         )

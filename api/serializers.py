@@ -19,7 +19,7 @@ class LocationSerializer(serializers.HyperlinkedModelSerializer):
             "latitude",
             "longitude",
             "point",
-            "bounding_box",
+            "polygon",
         ]
 
 

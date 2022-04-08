@@ -73,6 +73,14 @@ DATABASES = {
         "PASSWORD": "autosa",
         "HOST": "127.0.0.1",
         "PORT": "5432",
+        "TEST": {
+            "ENGINE": "django.contrib.gis.db.backends.postgis",
+            "NAME": "test_autosa",
+            "USER": "autosa",
+            "PASSWORD": "autosa",
+            "HOST": "127.0.0.1",
+            "PORT": "5432",
+        },
     }
 }
 
