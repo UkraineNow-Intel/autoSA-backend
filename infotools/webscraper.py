@@ -10,7 +10,6 @@ Dataframe will also be saved to a CSV file found in /infotools/CSVs/scraped.csv
 import pandas as pd
 from bs4 import BeautifulSoup
 import requests
-import re
 
 
 # not necessarily for situational updates, but for news stories
