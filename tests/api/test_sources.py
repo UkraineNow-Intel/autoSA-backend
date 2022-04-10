@@ -205,7 +205,7 @@ class SourceTests(APITestCase):
             "translations": translation_data,
             "locations": expected_location_data,
         }
-        sources = response.json()
+        sources = response.json()["results"]
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(sources), 1)
         actual = sources[0]
@@ -239,3 +239,32 @@ class SourceTests(APITestCase):
         self.assertEqual(Location.objects.count(), 0)
         self.assertEqual(Tag.objects.count(), 2)
         self.assertEqual(TaggedItem.objects.count(), 0)
+
+    def test_filter_by_timestamp(self):
+        """Filter by timestamp"""
+        tz = zoneinfo.ZoneInfo("UTC")
+        source1 = factories.SourceFactory(
+            timestamp=dt.datetime(2022, 4, 1, 1, 55, tzinfo=tz),
+            pinned=True,
+        )
+        source2 = factories.SourceFactory(
+            timestamp=dt.datetime(2022, 4, 1, 2, 55, tzinfo=tz),
+            pinned=True,
+        )
+        source3 = factories.SourceFactory(
+            timestamp=dt.datetime(2022, 4, 1, 3, 55, tzinfo=tz),
+            pinned=True,
+        )
+        url = reverse("source-list")
+
+        params = [
+            ({"timestamp": "2022-04-01T01:55:00Z"}, 1),
+         ({"timestamp__lt": "2022-04-01T03:55:00Z"}, 2),
+         ({"timestamp__lte": "2022-04-01T03:55:00Z"}, 3),
+         ({"timestamp__gt": "2022-04-01T01:55:00Z"}, 2),
+         ({"timestamp__gte": "2022-04-01T01:55:00Z"}, 3),
+         ]
+        for query, expected_count in params:
+            response = self.client.get(url, data=query, format="json")
+            results = response.json()["results"]
+            self.assertEqual(expected_count, len(results))

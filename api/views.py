@@ -11,6 +11,7 @@ from rest_framework.authentication import SessionAuthentication, BasicAuthentica
 from rest_framework.permissions import IsAuthenticated, DjangoModelPermissions
 from rest_framework.views import APIView
 from django.contrib.auth.models import Permission
+from django_filters.rest_framework import FilterSet
 
 
 def getPermissionsForUser(user):
@@ -84,6 +85,21 @@ def logout_view(request):
     return JsonResponse({"detail": "Successfully logged out."})
 
 
+class SourceFilter(FilterSet):
+    """Filter for Sources"""
+
+    class Meta:
+        model = Source
+        fields = {
+            "interface": ["exact"],
+            "source": ["exact"],
+            "headline": ["exact", "contains", "icontains"],
+            "text": ["exact", "contains", "icontains"],
+            "timestamp": ["exact", "lt", "lte", "gt", "gte", "range"],
+            "tags__name": ["exact", "in"]
+        }
+
+
 class SourceViewSet(viewsets.ModelViewSet):
     """List or retrieve sources"""
 
@@ -91,6 +107,11 @@ class SourceViewSet(viewsets.ModelViewSet):
     serializer_class = SourceSerializer
     authentication_classes = [SessionAuthentication, BasicAuthentication]
     permission_classes = [DjangoModelPermissions]
+    filterset_class = SourceFilter
+
+    class Meta:
+        ordering = ["-timestamp"]
+        get_latest_by = ["timestamp"]
 
 
 class TranslationViewSet(viewsets.ModelViewSet):
