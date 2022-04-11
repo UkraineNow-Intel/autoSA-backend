@@ -1,17 +1,7 @@
 import datetime as dt
 import factory
 from api import models
-from django.contrib.auth import models as auth_models
 from django.utils.crypto import get_random_string
-
-
-class UserFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = auth_models.User
-
-    username = "apitest"
-    password = "blah"
-    is_superuser = True
 
 
 class SourceFactory(factory.django.DjangoModelFactory):

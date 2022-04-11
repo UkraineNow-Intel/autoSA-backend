@@ -31,9 +31,10 @@ def create_source_set():
         interface="website",
         source="http://www.msnbc.com",
         headline="Terrible events in Bucha",
-        text="Russian soldiers killed peaceful civilians",
+        text="Russian soldiers killed peaceful civilians in Bucha",
         timestamp=dt.datetime(2022, 4, 1, 1, 55, tzinfo=TZ_UTC),
     )
+    source1.tags.add("bucha", "killing")
 
     source2 = factories.SourceFactory(
         interface="twitter",
@@ -42,6 +43,8 @@ def create_source_set():
         text="In Kramatorsk, dozens killed when trying to evacuate",
         timestamp=dt.datetime(2022, 4, 2, 2, 55, tzinfo=TZ_UTC),
     )
+    source2.tags.add("kramatorsk", "killing", "train station")
+
     source3 = factories.SourceFactory(
         interface="api",
         source="http://factal.com",
@@ -49,6 +52,8 @@ def create_source_set():
         text="Russian troops are dropping attempts to take Kharkiv",
         timestamp=dt.datetime(2022, 4, 3, 3, 55, tzinfo=TZ_UTC),
     )
+    source3.tags.add("kharkiv", "free")
+
     return source1, source2, source3
 
 
@@ -286,6 +291,124 @@ def test_delete_source(apiclient, admin_user, source):
 )
 def test_filter_by_timestamp(apiclient, admin_user, query, expected_count):
     """Filter by timestamp"""
+    apiclient.force_authenticate(user=admin_user)
+    url = reverse("source-list")
+    create_source_set()
+
+    response = apiclient.get(url, data=query, format="json")
+    results = response.json()["results"]
+    assert expected_count == len(results)
+
+
+@pytest.mark.parametrize(
+    ("query", "expected_count"),
+    [
+        ({"interface": "website"}, 1),
+        ({"interface": "twitter"}, 1),
+        ({"interface": "api"}, 1),
+    ],
+)
+def test_filter_by_interface(apiclient, admin_user, query, expected_count):
+    """Filter by interface"""
+    apiclient.force_authenticate(user=admin_user)
+    url = reverse("source-list")
+    create_source_set()
+
+    response = apiclient.get(url, data=query, format="json")
+    results = response.json()["results"]
+    assert expected_count == len(results)
+
+
+@pytest.mark.parametrize(
+    ("query", "expected_count"),
+    [
+        ({"source": "http://www.msnbc.com"}, 1),
+        ({"source": "@Blah"}, 1),
+        ({"source": "http://factal.com"}, 1),
+    ],
+)
+def test_filter_by_source(apiclient, admin_user, query, expected_count):
+    """Filter by source"""
+    apiclient.force_authenticate(user=admin_user)
+    url = reverse("source-list")
+    create_source_set()
+
+    response = apiclient.get(url, data=query, format="json")
+    results = response.json()["results"]
+    assert expected_count == len(results)
+
+
+@pytest.mark.parametrize(
+    ("query", "expected_count"),
+    [
+        # exact match
+        ({"headline": "Terrible events in Bucha"}, 1),
+        ({"headline": "Kramatorsk train station attack"}, 1),
+        ({"headline": "Russians retreating from Kharkiv"}, 1),
+        # contains
+        ({"headline__contains": "Bucha"}, 1),
+        ({"headline__contains": "Kramatorsk"}, 1),
+        ({"headline__contains": "Kharkiv"}, 1),
+        # contains, case insensitive
+        ({"headline__icontains": "bucha"}, 1),
+        ({"headline__icontains": "kramatorsk"}, 1),
+        ({"headline__icontains": "kharkiv"}, 1),
+    ],
+)
+def test_filter_by_headline(apiclient, admin_user, query, expected_count):
+    """Filter by headline"""
+    apiclient.force_authenticate(user=admin_user)
+    url = reverse("source-list")
+    create_source_set()
+
+    response = apiclient.get(url, data=query, format="json")
+    results = response.json()["results"]
+    assert expected_count == len(results)
+
+
+@pytest.mark.parametrize(
+    ("query", "expected_count"),
+    [
+        # exact match
+        ({"text": "Russian soldiers killed peaceful civilians in Bucha"}, 1),
+        ({"text": "In Kramatorsk, dozens killed when trying to evacuate"}, 1),
+        ({"text": "Russian troops are dropping attempts to take Kharkiv"}, 1),
+        # contains
+        ({"text__contains": "Bucha"}, 1),
+        ({"text__contains": "Kramatorsk"}, 1),
+        ({"text__contains": "Kharkiv"}, 1),
+        # contains, case insensitive
+        ({"text__icontains": "bucha"}, 1),
+        ({"text__icontains": "kramatorsk"}, 1),
+        ({"text__icontains": "kharkiv"}, 1),
+    ],
+)
+def test_filter_by_text(apiclient, admin_user, query, expected_count):
+    """Filter by text"""
+    apiclient.force_authenticate(user=admin_user)
+    url = reverse("source-list")
+    create_source_set()
+
+    response = apiclient.get(url, data=query, format="json")
+    results = response.json()["results"]
+    assert expected_count == len(results)
+
+
+@pytest.mark.parametrize(
+    ("query", "expected_count"),
+    [
+        # one tag
+        ({"tags": "bucha"}, 1),
+        ({"tags": "kramatorsk"}, 1),
+        ({"tags": "kharkiv"}, 1),
+        # multiple tags: OR
+        ({"tags": "bucha,kramatorsk"}, 2),
+        ({"tags": "kramatorsk,killing"}, 2),
+        ({"tags": "kharkiv,killing"}, 3),
+    ],
+)
+def test_filter_by_tags(apiclient, admin_user, query, expected_count):
+    """Filter by text"""
     apiclient.force_authenticate(user=admin_user)
     url = reverse("source-list")
     create_source_set()

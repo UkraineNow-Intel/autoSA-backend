@@ -11,7 +11,9 @@ from rest_framework.authentication import SessionAuthentication, BasicAuthentica
 from rest_framework.permissions import IsAuthenticated, DjangoModelPermissions
 from rest_framework.views import APIView
 from django.contrib.auth.models import Permission
+from django_filters import CharFilter
 from django_filters.rest_framework import FilterSet
+from taggit.models import Tag
 
 
 def getPermissionsForUser(user):
@@ -85,8 +87,18 @@ def logout_view(request):
     return JsonResponse({"detail": "Successfully logged out."})
 
 
+class TagsFilter(CharFilter):
+    def filter(self, qs, value):
+        if value:
+            tags = [tag.strip().lower() for tag in value.split(',')]
+            qs = qs.filter(tags__name__in=tags).distinct()
+
+        return qs
+
+
 class SourceFilter(FilterSet):
     """Filter for Sources"""
+    tags = TagsFilter("tags")
 
     class Meta:
         model = Source
@@ -96,7 +108,6 @@ class SourceFilter(FilterSet):
             "headline": ["exact", "contains", "icontains"],
             "text": ["exact", "contains", "icontains"],
             "timestamp": ["exact", "lt", "lte", "gt", "gte", "range"],
-            "tags__name": ["exact", "in"],
         }
 
 
