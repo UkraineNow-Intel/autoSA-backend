@@ -12,7 +12,23 @@ Current tasks can be found in Projects, but also feel free to ask in our group c
 
 ## How do I get set up? ###
 
-1. Install requirements
+It's always a good idea to create a virtualenv for every repository.
+
+If you're already using conda, pyenv or pipenv, you know how to create one.
+
+Or just create one with python + virtualenv:
+
+```shell
+python3 -m venv ~/.venvs/autosa-backend
+```
+
+Then activate it:
+
+```shell
+source ~/.venvs/autosa-backend/bin/activate
+```
+
+1. Now you can install requirements into the venv:
 
 ```shell
 pip install -r requirements.txt -r requirements-dev.txt -U --upgrade-strategy only-if-needed
@@ -68,7 +84,16 @@ It is scheduled (commented out) in [website/celery.py](website/celery.py).
 
 ### Contribution guidelines ###
 
-* Writing tests
+### Pre-commit hooks
+
+We have some pre-commit hooks to safeguard the repository from unintended changes. Make sure you install those.
+
+```shell
+pip install pre-commit
+pre-commit install
+```
+
+### Writing tests
 
 Tests should go in the `tests` directory.
 
