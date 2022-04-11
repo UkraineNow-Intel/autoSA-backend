@@ -3,8 +3,21 @@ import geopy
 import numpy as np
 import pandas as pd
 from infotools.location_parsing import extract_locations_for_dataframe
+import pytest
+
+pytestmark = pytest.mark.integration
+
+try:
+    import spacy
+
+    spacy.load("en_core_web_sm")
+    spacy.load("ru_core_news_sm")
+    SPACY_MODELS_AVAILABLE = True
+except OSError:
+    SPACY_MODELS_AVAILABLE = False
 
 
+@pytest.mark.skipif(~SPACY_MODELS_AVAILABLE, reason="Spacy models not available")
 def test_extract_locations_for_dataframe():
     dicts = [
         {
@@ -29,7 +42,10 @@ def test_extract_locations_for_dataframe():
             "source": "liveuamap.com",
             "id": None,
             "headline": None,
-            "text": "Emergency situation regime introduced in two villages of the Bilhorod region due to a shell explosion",
+            "text": (
+                "Emergency situation regime introduced in two villages of the Bilhorod"
+                " region due to a shell explosion"
+            ),
             "language": "en",
             "timestamp": int(round(datetime(2022, 3, 23, 15).timestamp())),
         },
@@ -39,7 +55,11 @@ def test_extract_locations_for_dataframe():
             "id": None,
             "headline": None,
             # Just for ukrainian example, actually text is there in english as well
-            "text": "Російські військові обстріляли з артилерії одне з харчових підприємств у Чернігові. Стався витік аміаку, проте його концентрація в межах допустимої норми, розповів Суспільному голова ОВА Чаус",
+            "text": (
+                "Російські військові обстріляли з артилерії одне з харчових підприємств"
+                " у Чернігові. Стався витік аміаку, проте його концентрація в межах"
+                " допустимої норми, розповів Суспільному голова ОВА Чаус"
+            ),
             "language": "ua",
             "timestamp": int(
                 round(
@@ -74,7 +94,9 @@ def test_extract_locations_for_dataframe():
             "id": None,
             "headline": None,
             # Russian example from news
-            "text": "В столице Болгарии Софии прошло массовое шествие в поддержку Украины.",
+            "text": (
+                "В столице Болгарии Софии прошло массовое шествие в поддержку Украины."
+            ),
             "language": "ru",
             "timestamp": int(
                 round(
@@ -96,7 +118,8 @@ def test_extract_locations_for_dataframe():
             {
                 "name": "Trostyanets",
                 "geocode": geopy.Location(
-                    "Trostineț-Тростянець-Тростянец, Подільський район, Одеська область, 67910, Україна",
+                    "Trostineț-Тростянець-Тростянец, Подільський район, Одеська"
+                    " область, 67910, Україна",
                     (47.6054743, 29.259883, 0.0),
                     {},
                 ),
@@ -106,7 +129,9 @@ def test_extract_locations_for_dataframe():
             {
                 "name": "Bilhorod",
                 "geocode": geopy.Location(
-                    "Білгород-Дністровський, Білгород-Дністровська міська громада, Білгород-Дністровський район, Одеська область, 67700-67719, Україна",
+                    "Білгород-Дністровський, Білгород-Дністровська міська громада,"
+                    " Білгород-Дністровський район, Одеська область, 67700-67719,"
+                    " Україна",
                     (46.1909823, 30.345784, 0.0),
                     {},
                 ),
@@ -116,7 +141,10 @@ def test_extract_locations_for_dataframe():
             {
                 "name": "Чернігові",
                 "geocode": geopy.Location(
-                    "Управління Державної казначейської служби України у місті Чернігові, 9, Київська вулиця, Деснянський район, Чернігів, Чернігівська міська громада, Чернігівський район, Чернігівська область, 14000-14499, Україна",
+                    "Управління Державної казначейської служби України у місті"
+                    " Чернігові, 9, Київська вулиця, Деснянський район, Чернігів,"
+                    " Чернігівська міська громада, Чернігівський район, Чернігівська"
+                    " область, 14000-14499, Україна",
                     (51.498392100000004, 31.291385200000008, 0.0),
                     {},
                 ),
@@ -138,12 +166,13 @@ def test_extract_locations_for_dataframe():
                     {},
                 ),
             },
-            # This is actually an error leading to this https://pl.wikipedia.org/wiki/Ukraina_(Sitnica)
+            # This is actually an error leading to this https://pl.wikipedia.org/wiki/Ukraina_(Sitnica) # noqa
             # instead of ukraine
             {
                 "name": "Украины",
                 "geocode": geopy.Location(
-                    "Ukraina, Sitnica, gmina Biecz, powiat gorlicki, województwo małopolskie, 38-323, Polska",
+                    "Ukraina, Sitnica, gmina Biecz, powiat gorlicki, województwo"
+                    " małopolskie, 38-323, Polska",
                     (49.7647222, 21.1288889, 0.0),
                     {},
                 ),

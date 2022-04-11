@@ -24,7 +24,8 @@ class TwitterAccount:
     Parameters
     ----------
     username_or_id: str or int
-        An existing twitter account's username with or without the '@' symbol or a twitter id.
+        An existing twitter account's username with or without
+        the '@' symbol or a twitter id.
 
     Examples
     --------
@@ -49,7 +50,7 @@ class TwitterAccount:
     Get a user's tweets
 
     >>> tweets = user.get_tweets()  # Get latest 5 tweets in a list.
-    >>> hundred_tweets = user.get_tweets(100)  # Get latest 100 tweets (maximum 100, min 5)
+    >>> hundred_tweets = user.get_tweets(100)  # Get latest 100 tweets (maximum 100, min 5) # noqa
     >>> latest_tweet = user.get_latest_tweet()
     """
 
@@ -128,7 +129,8 @@ def get_latest_tweets_from_sources(max_results=5) -> list[Tweet]:
 
 
 def latest_tweets_to_dataframe() -> pd.DataFrame:
-    """Get latest tweets from TWITTER_SOURCE_ACCOUNTS and return them in a dataframe format."""
+    """Get latest tweets from TWITTER_SOURCE_ACCOUNTS and
+    return them in a dataframe format."""
     tweets = get_latest_tweets_from_sources()
     df = pd.DataFrame([tweet.data for tweet in tweets])
     df["author"] = df["author_id"].apply(

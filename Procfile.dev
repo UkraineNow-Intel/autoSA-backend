@@ -1,0 +1,4 @@
+web: python manage.py runserver
+redis: redis-server
+celeryworker: DJANGO_SETTINGS_MODULE='website.settings.dev' celery --app website worker --concurrency 4 --loglevel INFO
+celerybeat: DJANGO_SETTINGS_MODULE='website.settings.dev' celery --app website beat

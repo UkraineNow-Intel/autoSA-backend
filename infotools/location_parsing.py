@@ -34,7 +34,8 @@ def extract_locations(texts, languages):
     Returns
     -------
     locations: list of list dict
-        List of detected locations, for each text a list of dicts with names and geocodes.
+        List of detected locations, for each text a list of dicts
+        with names and geocodes.
     """
     location_names_per_text = extract_location_names(texts, languages)
     geocodes_per_text = extract_geocodes(location_names_per_text)
@@ -119,7 +120,8 @@ def extract_geocodes(location_names_per_text):
     Returns
     -------
     geocodes_per_text: list of list of geocodes
-        List of list of geocodes, for each location name list a corresponding list of geocodes.
+        List of list of geocodes, for each location name list a
+        corresponding list of geocodes.
     """
     locator = geopy.geocoders.Nominatim(user_agent="mygeocoder")
     geocode = RateLimiter(locator.geocode, min_delay_seconds=0.2)
