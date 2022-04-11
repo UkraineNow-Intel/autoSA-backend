@@ -13,7 +13,6 @@ from rest_framework.views import APIView
 from django.contrib.auth.models import Permission
 from django_filters import CharFilter
 from django_filters.rest_framework import FilterSet
-from taggit.models import Tag
 
 
 def getPermissionsForUser(user):
@@ -121,9 +120,9 @@ class SourceViewSet(viewsets.ModelViewSet):
     permission_classes = [DjangoModelPermissions]
     filterset_class = SourceFilter
 
-    class Meta:
-        ordering = ["-timestamp"]
-        get_latest_by = ["timestamp"]
+    def filter_queryset(self, queryset):
+        queryset = super().filter_queryset(queryset)
+        return queryset.order_by("-timestamp")
 
 
 class TranslationViewSet(viewsets.ModelViewSet):

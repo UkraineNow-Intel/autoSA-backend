@@ -440,3 +440,16 @@ def test_paginate(apiclient, admin_user, query, expected_count, has_next, has_pr
     assert has_next == (next is not None)
     assert has_prev == (prev is not None)
     assert expected_count == len(results)
+
+
+def test_sort(apiclient, admin_user):
+    """Test default sort order"""
+    apiclient.force_authenticate(user=admin_user)
+    url = reverse("source-list")
+    create_source_set()
+
+    response = apiclient.get(url, data={"limit": 3}, format="json")
+    data = response.json()
+    results = data["results"]
+    timestamps = [r["timestamp"] for r in results]
+    assert sorted(timestamps, reverse=True) == timestamps
