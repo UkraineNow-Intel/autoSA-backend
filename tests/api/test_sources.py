@@ -416,3 +416,27 @@ def test_filter_by_tags(apiclient, admin_user, query, expected_count):
     response = apiclient.get(url, data=query, format="json")
     results = response.json()["results"]
     assert expected_count == len(results)
+
+
+@pytest.mark.parametrize(
+    ("query", "expected_count", "has_next", "has_prev"),
+    [
+        ({"limit": 1, "offset": 0}, 1, True, False),
+        ({"limit": 1, "offset": 1}, 1, True, True),
+        ({"limit": 1, "offset": 2}, 1, False, True),
+    ],
+)
+def test_paginate(apiclient, admin_user, query, expected_count, has_next, has_prev):
+    """Test pagination"""
+    apiclient.force_authenticate(user=admin_user)
+    url = reverse("source-list")
+    create_source_set()
+
+    response = apiclient.get(url, data=query, format="json")
+    data = response.json()
+    next = data["next"]
+    prev = data["previous"]
+    results = ["results"]
+    assert has_next == (next is not None)
+    assert has_prev == (prev is not None)
+    assert expected_count == len(results)
