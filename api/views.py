@@ -90,7 +90,7 @@ def logout_view(request):
 class TagsFilter(CharFilter):
     def filter(self, qs, value):
         if value:
-            tags = [tag.strip().lower() for tag in value.split(',')]
+            tags = [tag.strip().lower() for tag in value.split(",")]
             qs = qs.filter(tags__name__in=tags).distinct()
 
         return qs
@@ -98,6 +98,7 @@ class TagsFilter(CharFilter):
 
 class SourceFilter(FilterSet):
     """Filter for Sources"""
+
     tags = TagsFilter("tags")
 
     class Meta:
