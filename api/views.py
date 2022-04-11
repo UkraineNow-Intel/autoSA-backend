@@ -100,10 +100,3 @@ class TranslationViewSet(viewsets.ModelViewSet):
     serializer_class = TranslationSerializer
     authentication_classes = [SessionAuthentication, BasicAuthentication]
     permission_classes = [DjangoModelPermissions]
-
-
-class LocationViewSet(viewsets.ModelViewSet):
-    """List or retrieve locations"""
-
-    queryset = Location.objects.all()
-    serializer_class = LocationSerializer

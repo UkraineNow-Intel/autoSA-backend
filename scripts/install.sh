@@ -1,12 +1,14 @@
 #!/usr/bin/env bash
 set -ex
 
-POSTGRES_VERSION="${POSTGRES_VERSION:-13.4}"
+POSTGRES_VERSION="${POSTGRES_VERSION:-13}"
 
 # install geospatial libraries
 case $(uname | tr '[:upper:]' '[:lower:]') in
   linux*)
-    sudo apt-get install postgresql-"POSTGRES_VERSION", postgresql-"POSTGRES_VERSION"-postgis, postgresql-server-dev-"POSTGRES_VERSION"
+    sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt/ `lsb_release -cs`-pgdg main" >> /etc/apt/sources.list.d/pgdg.list'
+    sudo apt-get install postgresql-$POSTGRES_VERSION postgresql-$POSTGRES_VERSION-postgis-3 postgresql-server-dev-$POSTGRES_VERSION
+    sudo apt-get install postgis postgresql-$POSTGRES_VERSION-postgis-3
     sudo apt-get install binutils libproj-dev gdal-bin
     ;;
   darwin*)

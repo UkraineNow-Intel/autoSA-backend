@@ -70,10 +70,10 @@ DATABASES = {
     "default": {
         "ENGINE": "django.contrib.gis.db.backends.postgis",
         "NAME": "autosa",
-        "USER": "autosa",
-        "PASSWORD": "autosa",
-        "HOST": environ.get("POSTGRES_HOST", None) or "127.0.0.1",
-        "PORT": "5432",
+        "USER": environ.get("PGUSER", None) or "autosa",
+        "PASSWORD": environ.get("PGPASSWORD", None) or "autosa",
+        "HOST": environ.get("PGHOST", None) or "127.0.0.1",
+        "PORT": environ.get("PGPORT", None) or "5432",
     }
 }
 

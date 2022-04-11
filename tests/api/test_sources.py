@@ -31,7 +31,6 @@ class SourceTests(APITestCase):
     def test_create_source(self):
         """Create a new source"""
         url = reverse("source-list")
-        tz = zoneinfo.ZoneInfo("UTC")
         data = {
             "tags": ["tag1", "tag2"],
             "interface": "website",
@@ -39,14 +38,12 @@ class SourceTests(APITestCase):
             "headline": "",
             "text": "Щось трапилося",
             "language": "ua",
-            "timestamp": dt.datetime(2022, 4, 1, 20, 55, tzinfo=tz),
+            "timestamp": dt.datetime(2022, 4, 1, 20, 55, tzinfo=TZ_UTC),
             "pinned": True,
             "translations": [{"language": "en", "text": "Something happened"}],
             "locations": [
                 {
                     "name": "Somewhere",
-                    "latitude": 50.0,
-                    "longitude": 50.0,
                     "point": "SRID=4326;POINT (30.7233095 46.482526)",
                 }
             ],
@@ -88,8 +85,6 @@ class SourceTests(APITestCase):
             "locations": [
                 {
                     "name": "Somewhere",
-                    "latitude": 50.0,
-                    "longitude": 50.0,
                     "point": "SRID=4326;POINT (30.7233095 46.482526)",
                 }
             ],
@@ -124,8 +119,6 @@ class SourceTests(APITestCase):
             "locations": [
                 {
                     "name": "Somewhere",
-                    "latitude": 50.0,
-                    "longitude": 50.0,
                     "point": "SRID=4326;POINT (30.7233095 46.482526)",
                 }
             ],
@@ -149,17 +142,14 @@ class SourceTests(APITestCase):
 
     def test_list_sources(self):
         """Retrieve sources"""
-        tz = zoneinfo.ZoneInfo("UTC")
         source = factories.SourceFactory(
-            timestamp=dt.datetime(2022, 4, 1, 20, 55, tzinfo=tz),
+            timestamp=dt.datetime(2022, 4, 1, 20, 55, tzinfo=TZ_UTC),
             pinned=True,
         )
         translation_data = [{"language": "en", "text": "Something happened"}]
         location_data = [
             {
                 "name": "Somewhere",
-                "latitude": 50.0,
-                "longitude": 50.0,
                 "point": "SRID=4326;POINT (30.7233095 46.482526)",
             }
         ]
@@ -204,7 +194,7 @@ class SourceTests(APITestCase):
             bulk=False,
         )
         source.locations.add(
-            Location(source=source, name="Somewhere", latitude=50.0, longitude=50.0),
+            Location(source=source, name="Somewhere"),
             bulk=False,
         )
         url = reverse("source-detail", kwargs={"pk": source.id})

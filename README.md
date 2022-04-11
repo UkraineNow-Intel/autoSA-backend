@@ -15,10 +15,11 @@ Current tasks can be found in Projects, but also feel free to ask in our group c
 We have scripts to help with installation:
 
 ```shell
-# installs required OS and Python packages
-./scripts/install.sh
-# creates Postgresql database and user
+# create Postgresql database and user
 ./scripts/install_database.sh
+
+# install required OS and Python packages, run migrations
+./scripts/install.sh
 ```
 
 Optional steps that are not included in those scripts:

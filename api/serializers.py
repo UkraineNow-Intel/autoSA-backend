@@ -16,8 +16,6 @@ class LocationSerializer(serializers.HyperlinkedModelSerializer):
             "id",
             "source_id",
             "name",
-            "latitude",
-            "longitude",
             "point",
             "polygon",
         ]
