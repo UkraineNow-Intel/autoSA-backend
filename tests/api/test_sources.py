@@ -259,11 +259,11 @@ class SourceTests(APITestCase):
 
         params = [
             ({"timestamp": "2022-04-01T01:55:00Z"}, 1),
-         ({"timestamp__lt": "2022-04-01T03:55:00Z"}, 2),
-         ({"timestamp__lte": "2022-04-01T03:55:00Z"}, 3),
-         ({"timestamp__gt": "2022-04-01T01:55:00Z"}, 2),
-         ({"timestamp__gte": "2022-04-01T01:55:00Z"}, 3),
-         ]
+            ({"timestamp__lt": "2022-04-01T03:55:00Z"}, 2),
+            ({"timestamp__lte": "2022-04-01T03:55:00Z"}, 3),
+            ({"timestamp__gt": "2022-04-01T01:55:00Z"}, 2),
+            ({"timestamp__gte": "2022-04-01T01:55:00Z"}, 3),
+        ]
         for query, expected_count in params:
             response = self.client.get(url, data=query, format="json")
             results = response.json()["results"]

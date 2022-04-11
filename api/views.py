@@ -96,7 +96,7 @@ class SourceFilter(FilterSet):
             "headline": ["exact", "contains", "icontains"],
             "text": ["exact", "contains", "icontains"],
             "timestamp": ["exact", "lt", "lte", "gt", "gte", "range"],
-            "tags__name": ["exact", "in"]
+            "tags__name": ["exact", "in"],
         }
 
 
