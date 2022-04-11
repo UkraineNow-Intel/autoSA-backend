@@ -105,9 +105,11 @@ def get_twitter_acccount(username_or_id: Union[str, int]) -> User:
         twitter_id = username_or_id
         response: Response = client.get_user(id=twitter_id)
     else:
-        username = username_or_id if not username_or_id.startswith('@') else username_or_id[1:]
+        username = (
+            username_or_id if not username_or_id.startswith("@") else username_or_id[1:]
+        )
         response: Response = client.get_user(username=username)
-    
+
     # Check to make sure a twitter account with this username exists.
     if response.errors:
         raise ValueError(response.errors[0]["detail"])

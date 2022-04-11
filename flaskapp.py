@@ -19,7 +19,7 @@ translator = Translator()
 
 @app.route("/", methods=["GET"])
 def index():
-    return render_template('website/templates/home.html')
+    return render_template("website/templates/home.html")
 
 
 @app.route(

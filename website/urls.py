@@ -21,9 +21,13 @@ from django.conf.urls.static import static
 from . import views
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('', views.home, name='home'),
-    path('translation/<str:source_lang>/<str:target_lang>/<str:translation_input>', views.translation, name='translation')
+    path("admin/", admin.site.urls),
+    path("", views.home, name="home"),
+    path(
+        "translation/<str:source_lang>/<str:target_lang>/<str:translation_input>",
+        views.translation,
+        name="translation",
+    ),
 ]
 
 if settings.DEBUG:
