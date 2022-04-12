@@ -220,12 +220,8 @@ def test_list_sources(apiclient, admin_user):
             "point": {"type": "Point", "coordinates": [30.7233095, 46.482526]},
         }
     ]
-    source.translations.set(
-        [Translation(**td) for td in translation_data], bulk=False
-    )
-    source.locations.set(
-        [Location(**ld) for ld in create_location_data], bulk=False
-    )
+    source.translations.set([Translation(**td) for td in translation_data], bulk=False)
+    source.locations.set([Location(**ld) for ld in create_location_data], bulk=False)
 
     url = reverse("source-list")
     response = apiclient.get(url, format="json")
