@@ -287,6 +287,7 @@ def test_delete_source(apiclient, admin_user, source):
         ({"timestamp__lte": "2022-04-03T03:55:00Z"}, 3),
         ({"timestamp__gt": "2022-04-01T01:55:00Z"}, 2),
         ({"timestamp__gte": "2022-04-01T01:55:00Z"}, 3),
+        ({"timestamp__range": "2022-04-01T01:55:00Z,2022-04-02T02:55:00Z"}, 2),
     ],
 )
 def test_filter_by_timestamp(apiclient, admin_user, query, expected_count):
@@ -296,7 +297,8 @@ def test_filter_by_timestamp(apiclient, admin_user, query, expected_count):
     create_source_set()
 
     response = apiclient.get(url, data=query, format="json")
-    results = response.json()["results"]
+    data = response.json()
+    results = data["results"]
     assert expected_count == len(results)
 
 
