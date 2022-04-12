@@ -15,6 +15,21 @@ jobs:
       matrix:
         python-version: [3.8, 3.9]
 
+    services:
+      postgres:
+        image: postgis/postgis:13-3.2
+        env:
+          POSTGRES_USER: autosa
+          POSTGRES_PASSWORD: autosa
+          POSTGRES_DB: test_autosa
+        ports:
+            - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
       - uses: actions/checkout@v2
 
@@ -22,6 +37,11 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
+
+      - name: Install packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install binutils libproj-dev gdal-bin
 
       - name: Install requirements
         run: |

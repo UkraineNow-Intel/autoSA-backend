@@ -12,6 +12,35 @@ Current tasks can be found in Projects, but also feel free to ask in our group c
 
 ## How do I get set up? ###
 
+We have scripts to help with installation:
+
+```shell
+# create Postgresql database and user
+./scripts/install_database.sh
+
+# install required OS and Python packages, run migrations
+./scripts/install.sh
+```
+
+Optional steps that are not included in those scripts:
+
+It's always a good idea to create a virtualenv for every repository.
+
+If you're already using conda, pyenv or pipenv, you know how to create one.
+
+Or just create one with python + virtualenv:
+
+```shell
+python3 -m venv ~/.venvs/autosa-backend
+```
+
+Then activate it:
+
+```shell
+source ~/.venvs/autosa-backend/bin/activate
+```
+
+1. Now you can install requirements into the venv:
 It's always a good idea to create a virtualenv for every repository.
 
 If you're already using conda, pyenv or pipenv, you know how to create one.
@@ -40,13 +69,7 @@ pip install -r requirements.txt -r requirements-dev.txt -U --upgrade-strategy on
 python -m spacy download en_core_web_sm ru_core_news_sm
 ```
 
-4. Run migrations
-
-```shell
-python manage.py migrate
-```
-
-5. Create a user that can log in to the website. You will be prompted for password:
+2. Create a user that can log in to the website. You will be prompted for password:
 
 ```shell
 python manage.py createsuperuser --email admin@example.com --username admin
