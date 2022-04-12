@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -ex
+set -o pipefail -ex
 
 POSTGRES_VERSION="${POSTGRES_VERSION:-13}"
 
