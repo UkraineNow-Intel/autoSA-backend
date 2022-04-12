@@ -50,10 +50,7 @@ class SourceTests(APITestCase):
             "locations": [
                 {
                     "name": "Somewhere",
-                    "point": {
-                        "type": "Point",
-                        "coordinates": [30.7233095, 46.482526]
-                    },
+                    "point": {"type": "Point", "coordinates": [30.7233095, 46.482526]},
                 }
             ],
         }
@@ -94,10 +91,7 @@ class SourceTests(APITestCase):
             "locations": [
                 {
                     "name": "Somewhere",
-                    "point": {
-                        "type": "Point",
-                        "coordinates": [30.7233095, 46.482526]
-                    },
+                    "point": {"type": "Point", "coordinates": [30.7233095, 46.482526]},
                 }
             ],
         }
@@ -131,10 +125,7 @@ class SourceTests(APITestCase):
             "locations": [
                 {
                     "name": "Somewhere",
-                    "point": {
-                        "type": "Point",
-                        "coordinates": [30.7233095, 46.482526]
-                    },
+                    "point": {"type": "Point", "coordinates": [30.7233095, 46.482526]},
                 }
             ],
         }
@@ -171,16 +162,15 @@ class SourceTests(APITestCase):
         expected_location_data = [
             {
                 "name": "Somewhere",
-                "point": {
-                    "type": "Point",
-                    "coordinates": [30.7233095, 46.482526]
-                },
+                "point": {"type": "Point", "coordinates": [30.7233095, 46.482526]},
             }
         ]
         source.translations.set(
             [Translation(**td) for td in translation_data], bulk=False
         )
-        source.locations.set([Location(**ld) for ld in create_location_data], bulk=False)
+        source.locations.set(
+            [Location(**ld) for ld in create_location_data], bulk=False
+        )
         url = reverse("source-list")
         response = self.client.get(url, format="json")
         expected = {

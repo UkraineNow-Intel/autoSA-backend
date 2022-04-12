@@ -77,7 +77,6 @@ class SourceSerializer(TaggitSerializer, serializers.HyperlinkedModelSerializer)
     def update_children(source, children_data, child_class, related_name):
         getattr(source, related_name).all().delete()
         new_children = [
-            child_class(source=source, **child_data)
-            for child_data in children_data
+            child_class(source=source, **child_data) for child_data in children_data
         ]
         getattr(source, related_name).set(new_children, bulk=False)
