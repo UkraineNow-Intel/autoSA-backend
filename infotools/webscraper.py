@@ -1,8 +1,8 @@
 """
 Use BeautifulSoup to scrape relevant websites with news pertaining to Ukraine.
 
-Each function should return a dataframe holding the relevant information for each source, which can be
-accessed by the front end.
+Each function should return a dataframe holding the relevant information for each source,
+which can be accessed by the front end.
 
 Dataframe will also be saved to a CSV file found in /infotools/CSVs/scraped.csv
 """
@@ -31,7 +31,9 @@ def get_latest_from_nbc():
                 "headline": item.select("h2.alacarte__headline"),
                 "text": text,
                 "language": "en",
-                "timestamp": None,  # theoretically information is there e.g.<span class="date_add">1 hour ago</span>
+                "timestamp": None,
+                # theoretically information is there e.g.
+                # <span class="date_add">1 hour ago</span>
             }
         )
 
