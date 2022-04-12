@@ -43,17 +43,6 @@ class Source(models.Model):
             models.Index(fields=["timestamp"], name="timestamp_idx"),
         ]
 
-    def __str__(self):
-        return f"""id: {self.id}, language: {self.language}, text: {self.text}"""
-
-    def __repr__(self):
-        return (
-            f"""{self.__class__.__name__}(interface="{self.interface}", """
-            f"""source="{self.source}, headline="{self.headline}\"""",
-            f"""text="{self.text}\", language="{self.language}", """,
-            f"""timestamp={self.timestamp})""",
-        )
-
 
 class Translation(models.Model):
     """Represents a translation for a source. One source may have
@@ -64,15 +53,6 @@ class Translation(models.Model):
     source = models.ForeignKey(
         Source, on_delete=models.CASCADE, related_name="translations"
     )
-
-    def __str__(self):
-        return f"""id: {self.id}, language: {self.language}, text: {self.text}"""
-
-    def __repr__(self):
-        return (
-            f"""{self.__class__.__name__}(language="{self.language}", """
-            f"""text="{self.text}\""""
-        )
 
 
 class Location(models.Model):
@@ -92,15 +72,3 @@ class Location(models.Model):
         indexes = [
             models.Index(fields=["name"], name="name_idx"),
         ]
-
-    def __str__(self):
-        return (
-            f"""id: {self.id}, name: {self.name}, latitude: {self.latitude}, """,
-            f"""longitude: {self.longitude}""",
-        )
-
-    def __repr__(self):
-        return (
-            f"""{self.__class__.__name__}(name="{self.name}", """
-            f"""latitude={self.latitude}, longitude={self.longitude}"""
-        )

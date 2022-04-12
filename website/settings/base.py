@@ -26,6 +26,7 @@ INSTALLED_APPS = [
     "django_celery_beat",
     "taggit",
     "rest_framework",
+    "rest_framework_gis",
     "api.apps.ApiConfig",
 ]
 

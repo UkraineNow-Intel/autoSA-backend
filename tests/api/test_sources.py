@@ -11,6 +11,7 @@ from rest_framework.test import APITestCase
 from taggit.models import Tag, TaggedItem
 from api.models import Source, Translation, Location
 import pytest
+import json
 from . import factories
 
 pytestmark = pytest.mark.integration
@@ -26,7 +27,12 @@ class SourceTests(APITestCase):
         for i, actual_child in enumerate(actual_children):
             expected_child = expected_children[i]
             for field_name in expected_child:
-                self.assertEqual(expected_child[field_name], actual_child[field_name])
+                expected_value = expected_child[field_name]
+                if hasattr(actual_child[field_name], "json"):
+                    actual_value = json.loads(actual_child[field_name].json)
+                else:
+                    actual_value = actual_child[field_name]
+                self.assertEqual(expected_value, actual_value)
 
     def test_create_source(self):
         """Create a new source"""
@@ -44,7 +50,10 @@ class SourceTests(APITestCase):
             "locations": [
                 {
                     "name": "Somewhere",
-                    "point": "SRID=4326;POINT (30.7233095 46.482526)",
+                    "point": {
+                        "type": "Point",
+                        "coordinates": [30.7233095, 46.482526]
+                    },
                 }
             ],
         }
@@ -85,7 +94,10 @@ class SourceTests(APITestCase):
             "locations": [
                 {
                     "name": "Somewhere",
-                    "point": "SRID=4326;POINT (30.7233095 46.482526)",
+                    "point": {
+                        "type": "Point",
+                        "coordinates": [30.7233095, 46.482526]
+                    },
                 }
             ],
         }
@@ -119,7 +131,10 @@ class SourceTests(APITestCase):
             "locations": [
                 {
                     "name": "Somewhere",
-                    "point": "SRID=4326;POINT (30.7233095 46.482526)",
+                    "point": {
+                        "type": "Point",
+                        "coordinates": [30.7233095, 46.482526]
+                    },
                 }
             ],
         }
@@ -147,16 +162,25 @@ class SourceTests(APITestCase):
             pinned=True,
         )
         translation_data = [{"language": "en", "text": "Something happened"}]
-        location_data = [
+        create_location_data = [
             {
                 "name": "Somewhere",
-                "point": "SRID=4326;POINT (30.7233095 46.482526)",
+                "point": "POINT(30.7233095 46.482526)",
+            }
+        ]
+        expected_location_data = [
+            {
+                "name": "Somewhere",
+                "point": {
+                    "type": "Point",
+                    "coordinates": [30.7233095, 46.482526]
+                },
             }
         ]
         source.translations.set(
             [Translation(**td) for td in translation_data], bulk=False
         )
-        source.locations.set([Location(**ld) for ld in location_data], bulk=False)
+        source.locations.set([Location(**ld) for ld in create_location_data], bulk=False)
         url = reverse("source-list")
         response = self.client.get(url, format="json")
         expected = {
@@ -169,7 +193,7 @@ class SourceTests(APITestCase):
             "timestamp": "2022-04-01T20:55:00Z",
             "pinned": True,
             "translations": translation_data,
-            "locations": location_data,
+            "locations": expected_location_data,
         }
         sources = response.json()
         self.assertEqual(response.status_code, status.HTTP_200_OK)
