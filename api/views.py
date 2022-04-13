@@ -15,6 +15,9 @@ from django_filters import CharFilter
 from django.db.models import Q
 from django_filters.rest_framework import FilterSet
 
+from bs4 import BeautifulSoup
+import requests
+
 
 def getPermissionsForUser(user):
     """
@@ -50,6 +53,83 @@ def get_csrf(request):
     response = JsonResponse({"detail": "CSRF cookie set"})
     response["X-CSRFToken"] = get_token(request)
     return response
+
+
+def get_latest_from_liveuamap():
+    url = "https://liveuamap.com"
+    res = requests.get(url)
+    soup = BeautifulSoup(res.content, "html.parser")
+
+    items = soup.select("div.news-lent div.event")
+
+    item_dicts = []
+    for item in items:
+        text = item.select("div.title")[0].text
+        item_dicts.append(
+            {
+                "interface": "website",
+                "source": "liveuamap.com",
+                "text": text,
+                "language": "en",
+                "timestamp": "2022-04-01T20:55:00Z",
+                "translations": [],
+            }
+        )
+
+    return item_dicts
+
+
+def get_source_in_database(source_item):
+    """returns true if item with same text + source + interface is already in database"""
+    return Source.objects.values().filter(
+        text=source_item["text"],
+        source=source_item["source"],
+        interface=source_item["interface"],
+    )
+
+
+def refresh(request):
+    """
+    Get's new data from different interfaces (TODO: currently only liveuamap) and adds it to the database
+
+    parameters:
+    - name: override
+      description: Overwrites existing entries with new data if defined (e.g. `refresh/?override`)
+      required: false
+      default: false
+    """
+    override_existing = request.GET.get("override", "false") == ""
+    data = get_latest_from_liveuamap()
+    sourceSerial = SourceSerializer()
+
+    # check if source is duplicate
+    number_of_duplicates = 0
+    newly_added = 0
+    for item in data:
+        already_in_db = get_source_in_database(item)
+        if len(already_in_db) > 0:
+            number_of_duplicates += 1
+            if override_existing:
+                instance = Source.objects.get(id=already_in_db[0]["id"])
+                sourceSerial.update(instance, item)
+            continue
+        sourceSerial.create(item)
+        newly_added += 1
+    if override_existing:
+        return JsonResponse(
+            {
+                "detail": "Refresh completed",
+                "overwritten": number_of_duplicates,
+                "newly_added": newly_added,
+            }
+        )
+    return JsonResponse(
+        {
+            "detail": "Refresh completed",
+            "already_inserted": number_of_duplicates,
+            "newly_added": newly_added,
+        }
+    )
 
 
 @require_POST
