@@ -30,3 +30,8 @@ timestamp = None
 Timestamp should be filled in as None in the config file by default.
 
 Not all of these attributes may be present in every site! If one is missing, fill in NA in the config file.
+
+### Limitations
+- Currently, location data is not associated with articles
+- Timestamps is set for when the site is accessed, getting article publish date needs some more attention.
+- Accessing attributes is very inconsistent
