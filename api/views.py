@@ -15,8 +15,10 @@ from django_filters import CharFilter
 from django.db.models import Q
 from django_filters.rest_framework import FilterSet
 
-from bs4 import BeautifulSoup
-import requests
+import sys
+
+sys.path.append("..")
+from infotools.webscraper import get_latest_from_liveuamap
 
 
 def getPermissionsForUser(user):
@@ -53,30 +55,6 @@ def get_csrf(request):
     response = JsonResponse({"detail": "CSRF cookie set"})
     response["X-CSRFToken"] = get_token(request)
     return response
-
-
-def get_latest_from_liveuamap():
-    url = "https://liveuamap.com"
-    res = requests.get(url)
-    soup = BeautifulSoup(res.content, "html.parser")
-
-    items = soup.select("div.news-lent div.event")
-
-    item_dicts = []
-    for item in items:
-        text = item.select("div.title")[0].text
-        item_dicts.append(
-            {
-                "interface": "website",
-                "source": "liveuamap.com",
-                "text": text,
-                "language": "en",
-                "timestamp": "2022-04-01T20:55:00Z",
-                "translations": [],
-            }
-        )
-
-    return item_dicts
 
 
 def get_source_in_database(source_item):
