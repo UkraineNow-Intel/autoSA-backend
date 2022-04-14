@@ -49,11 +49,18 @@ class Source(models.Model):
     external_id = models.CharField(max_length=250, default=uuid.uuid4, unique=True)
     # url of original telegram message, tweet, website page
     url = models.CharField(max_length=2000, blank=True)
+    # image or video if present
+    media_url = models.CharField(max_length=2000, blank=True)
     headline = models.CharField(max_length=250, blank=True)
     text = models.TextField()
     language = models.CharField(max_length=2, choices=LANGUAGES)
     pinned = models.BooleanField(default=False)
+    # when published
     timestamp = models.DateTimeField(default=timezone.now)
+    timestamp_created = models.DateTimeField(auto_now_add=True)
+    timestamp_updated = models.DateTimeField(auto_now=True)
+    # deleted flag
+    deleted = models.BooleanField(default=False)
     tags = TaggableManager(blank=True)
 
     class Meta:
