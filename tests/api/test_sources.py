@@ -25,11 +25,12 @@ def source():
     )
 
 
-def create_source_set():
+@pytest.fixture
+def source_set():
     """Helper method to create multiple sources"""
     source1 = factories.SourceFactory(
         interface="website",
-        source="http://www.msnbc.com",
+        origin="http://www.msnbc.com",
         headline="Terrible events in Bucha",
         text="Russian soldiers killed peaceful civilians in Bucha",
         timestamp=dt.datetime(2022, 4, 1, 1, 55, tzinfo=TZ_UTC),
@@ -38,7 +39,7 @@ def create_source_set():
 
     source2 = factories.SourceFactory(
         interface="twitter",
-        source="@Blah",
+        origin="@Blah",
         headline="Kramatorsk train station attack",
         text="In Kramatorsk, dozens killed when trying to evacuate",
         timestamp=dt.datetime(2022, 4, 2, 2, 55, tzinfo=TZ_UTC),
@@ -47,7 +48,7 @@ def create_source_set():
 
     source3 = factories.SourceFactory(
         interface="api",
-        source="http://factal.com",
+        origin="http://factal.com",
         headline="Russians retreating from Kharkiv",
         text="Russian troops are dropping attempts to take Kharkiv",
         timestamp=dt.datetime(2022, 4, 3, 3, 55, tzinfo=TZ_UTC),
@@ -57,7 +58,8 @@ def create_source_set():
     return source1, source2, source3
 
 
-def create_multi_search_source_set():
+@pytest.fixture
+def multi_search_source_set():
     """Helper method to create multiple sources"""
 
     sources = []
@@ -66,7 +68,7 @@ def create_multi_search_source_set():
         # keyword in headline only
         source1 = factories.SourceFactory(
             interface="website",
-            source="http://www.msnbc.com",
+            origin="http://www.msnbc.com",
             headline=f"Terrible events in {kw}",
             text="Russian soldiers killed peaceful civilians",
             timestamp=dt.datetime(2022, 4, 1, 1, 55, tzinfo=TZ_UTC),
@@ -76,7 +78,7 @@ def create_multi_search_source_set():
         # keyword in text only
         source2 = factories.SourceFactory(
             interface="website",
-            source="http://www.msnbc.com",
+            origin="http://www.msnbc.com",
             headline="Terrible events in Ukraine",
             text=f"Russian soldiers killed peaceful civilians in {kw}",
             timestamp=dt.datetime(2022, 4, 1, 1, 55, tzinfo=TZ_UTC),
@@ -86,7 +88,7 @@ def create_multi_search_source_set():
         # keyword in tags only
         source3 = factories.SourceFactory(
             interface="website",
-            source="http://www.msnbc.com",
+            origin="http://www.msnbc.com",
             headline="Terrible events in Ukraine",
             text="Russian soldiers killed peaceful civilians",
             timestamp=dt.datetime(2022, 4, 1, 1, 55, tzinfo=TZ_UTC),
@@ -326,11 +328,10 @@ def test_delete_source(apiclient, admin_user, source):
         ({"timestamp__range": "2022-04-01T01:55:00Z,2022-04-02T02:55:00Z"}, 2),
     ],
 )
-def test_filter_by_timestamp(apiclient, admin_user, query, expected_count):
+def test_filter_by_timestamp(apiclient, admin_user, source_set, query, expected_count):
     """Filter by timestamp"""
     apiclient.force_authenticate(user=admin_user)
     url = reverse("source-list")
-    create_source_set()
 
     response = apiclient.get(url, data=query, format="json")
     data = response.json()
@@ -346,11 +347,10 @@ def test_filter_by_timestamp(apiclient, admin_user, query, expected_count):
         ({"interface": "api"}, 1),
     ],
 )
-def test_filter_by_interface(apiclient, admin_user, query, expected_count):
+def test_filter_by_interface(apiclient, admin_user, source_set, query, expected_count):
     """Filter by interface"""
     apiclient.force_authenticate(user=admin_user)
     url = reverse("source-list")
-    create_source_set()
 
     response = apiclient.get(url, data=query, format="json")
     results = response.json()["results"]
@@ -360,16 +360,15 @@ def test_filter_by_interface(apiclient, admin_user, query, expected_count):
 @pytest.mark.parametrize(
     ("query", "expected_count"),
     [
-        ({"source": "http://www.msnbc.com"}, 1),
-        ({"source": "@Blah"}, 1),
-        ({"source": "http://factal.com"}, 1),
+        ({"origin": "http://www.msnbc.com"}, 1),
+        ({"origin": "@Blah"}, 1),
+        ({"origin": "http://factal.com"}, 1),
     ],
 )
-def test_filter_by_source(apiclient, admin_user, query, expected_count):
+def test_filter_by_source(apiclient, admin_user, source_set, query, expected_count):
     """Filter by source"""
     apiclient.force_authenticate(user=admin_user)
     url = reverse("source-list")
-    create_source_set()
 
     response = apiclient.get(url, data=query, format="json")
     results = response.json()["results"]
@@ -393,11 +392,10 @@ def test_filter_by_source(apiclient, admin_user, query, expected_count):
         ({"headline__icontains": "kharkiv"}, 1),
     ],
 )
-def test_filter_by_headline(apiclient, admin_user, query, expected_count):
+def test_filter_by_headline(apiclient, admin_user, source_set, query, expected_count):
     """Filter by headline"""
     apiclient.force_authenticate(user=admin_user)
     url = reverse("source-list")
-    create_source_set()
 
     response = apiclient.get(url, data=query, format="json")
     results = response.json()["results"]
@@ -421,11 +419,10 @@ def test_filter_by_headline(apiclient, admin_user, query, expected_count):
         ({"text__icontains": "kharkiv"}, 1),
     ],
 )
-def test_filter_by_text(apiclient, admin_user, query, expected_count):
+def test_filter_by_text(apiclient, admin_user, source_set, query, expected_count):
     """Filter by text"""
     apiclient.force_authenticate(user=admin_user)
     url = reverse("source-list")
-    create_source_set()
 
     response = apiclient.get(url, data=query, format="json")
     results = response.json()["results"]
@@ -445,11 +442,10 @@ def test_filter_by_text(apiclient, admin_user, query, expected_count):
         ({"tags": "kharkiv,killing"}, 3),
     ],
 )
-def test_filter_by_tags(apiclient, admin_user, query, expected_count):
+def test_filter_by_tags(apiclient, admin_user, source_set, query, expected_count):
     """Filter by text"""
     apiclient.force_authenticate(user=admin_user)
     url = reverse("source-list")
-    create_source_set()
 
     response = apiclient.get(url, data=query, format="json")
     results = response.json()["results"]
@@ -464,11 +460,12 @@ def test_filter_by_tags(apiclient, admin_user, query, expected_count):
         ({"q": "kharkiv"}, 3),
     ],
 )
-def test_multi_search_q(apiclient, admin_user, query, expected_count):
+def test_multi_search_q(
+    apiclient, admin_user, multi_search_source_set, query, expected_count
+):
     """Filter by text, keyword or tag"""
     apiclient.force_authenticate(user=admin_user)
     url = reverse("source-list")
-    create_multi_search_source_set()
 
     response = apiclient.get(url, data=query, format="json")
     results = response.json()["results"]
@@ -483,11 +480,12 @@ def test_multi_search_q(apiclient, admin_user, query, expected_count):
         ({"limit": 1, "offset": 2}, 1, False, True),
     ],
 )
-def test_paginate(apiclient, admin_user, query, expected_count, has_next, has_prev):
+def test_paginate(
+    apiclient, admin_user, query, source_set, expected_count, has_next, has_prev
+):
     """Test pagination"""
     apiclient.force_authenticate(user=admin_user)
     url = reverse("source-list")
-    create_source_set()
 
     response = apiclient.get(url, data=query, format="json")
     data = response.json()
@@ -499,11 +497,10 @@ def test_paginate(apiclient, admin_user, query, expected_count, has_next, has_pr
     assert expected_count == len(results)
 
 
-def test_sort(apiclient, admin_user):
+def test_sort(apiclient, admin_user, source_set):
     """Test default sort order"""
     apiclient.force_authenticate(user=admin_user)
     url = reverse("source-list")
-    create_source_set()
 
     response = apiclient.get(url, data={"limit": 3}, format="json")
     data = response.json()

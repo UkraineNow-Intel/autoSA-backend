@@ -19,7 +19,7 @@ curl --location --request POST 'http://localhost:8000/api/sources' \
 --data-raw '{
     "tags": [],
     "interface": "website",
-    "source": "http://www.example.com",
+    "origin": "http://www.example.com",
     "headline": "Hi there",
     "text": "Щось трапилося",
     "language": "ua",
@@ -83,10 +83,10 @@ curl --location --request GET 'http://localhost:8000/api/sources?interface=twitt
 --user admin:adminadmin
 ```
 
-Filter by source:
+Filter by origin:
 
 ```shell
-curl --location --request GET 'http://localhost:8000/api/sources?source=%40Blah' \
+curl --location --request GET 'http://localhost:8000/api/sources?origin=%40Blah' \
 --user admin:adminadmin
 ```
 

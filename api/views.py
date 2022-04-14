@@ -114,7 +114,7 @@ class SourceFilter(FilterSet):
         model = Source
         fields = {
             "interface": ["exact"],
-            "source": ["exact"],
+            "origin": ["exact"],
             "headline": ["exact", "contains", "icontains"],
             "text": ["exact", "contains", "icontains"],
             "timestamp": ["exact", "lt", "lte", "gt", "gte", "range"],
