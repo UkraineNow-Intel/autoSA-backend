@@ -12,6 +12,7 @@ from rest_framework.permissions import IsAuthenticated, DjangoModelPermissions
 from rest_framework.views import APIView
 from django.contrib.auth.models import Permission
 from django_filters import CharFilter
+from django.db.models import Q
 from django_filters.rest_framework import FilterSet
 
 
@@ -99,6 +100,15 @@ class SourceFilter(FilterSet):
     """Filter for Sources"""
 
     tags = TagsFilter("tags")
+    q = CharFilter(method="multi_field_search", lookup_expr="icontains")
+
+    def multi_field_search(self, queryset, name, value):
+        """Search in headline, text or tags"""
+        return queryset.filter(
+            Q(text__icontains=value) |
+            Q(headline__icontains=value) |
+            Q(tags__name__icontains=value)
+        ).distinct()
 
     class Meta:
         model = Source

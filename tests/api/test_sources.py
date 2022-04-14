@@ -57,6 +57,46 @@ def create_source_set():
     return source1, source2, source3
 
 
+def create_multi_search_source_set():
+    """Helper method to create multiple sources"""
+
+    sources = []
+
+    for kw in ["Bucha", "Kramatorsk", "Kharkiv"]:
+        # keyword in headline only
+        source1 = factories.SourceFactory(
+            interface="website",
+            source="http://www.msnbc.com",
+            headline=f"Terrible events in {kw}",
+            text="Russian soldiers killed peaceful civilians",
+            timestamp=dt.datetime(2022, 4, 1, 1, 55, tzinfo=TZ_UTC),
+        )
+        sources.append(source1)
+
+        # keyword in text only
+        source2 = factories.SourceFactory(
+            interface="website",
+            source="http://www.msnbc.com",
+            headline="Terrible events in Ukraine",
+            text=f"Russian soldiers killed peaceful civilians in {kw}",
+            timestamp=dt.datetime(2022, 4, 1, 1, 55, tzinfo=TZ_UTC),
+        )
+        sources.append(source2)
+
+        # keyword in tags only
+        source3 = factories.SourceFactory(
+            interface="website",
+            source="http://www.msnbc.com",
+            headline="Terrible events in Ukraine",
+            text="Russian soldiers killed peaceful civilians",
+            timestamp=dt.datetime(2022, 4, 1, 1, 55, tzinfo=TZ_UTC),
+        )
+        source3.tags.add(kw)
+        sources.append(source3)
+
+    return sources
+
+
 def compare_children(expected_children, actual_children):
     for i, actual_child in enumerate(actual_children):
         expected_child = expected_children[i]
@@ -410,6 +450,25 @@ def test_filter_by_tags(apiclient, admin_user, query, expected_count):
     apiclient.force_authenticate(user=admin_user)
     url = reverse("source-list")
     create_source_set()
+
+    response = apiclient.get(url, data=query, format="json")
+    results = response.json()["results"]
+    assert expected_count == len(results)
+
+
+@pytest.mark.parametrize(
+    ("query", "expected_count"),
+    [
+        ({"q": "bucha"}, 3),
+        ({"q": "kramatorsk"}, 3),
+        ({"q": "kharkiv"}, 3),
+    ],
+)
+def test_multi_search_q(apiclient, admin_user, query, expected_count):
+    """Filter by text, keyword or tag"""
+    apiclient.force_authenticate(user=admin_user)
+    url = reverse("source-list")
+    create_multi_search_source_set()
 
     response = apiclient.get(url, data=query, format="json")
     results = response.json()["results"]

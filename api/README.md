@@ -118,6 +118,13 @@ curl --location --request GET 'http://localhost:8000/api/sources?tags=Bucha,Khar
 --user admin:adminadmin
 ```
 
+Multi-search. Search for a keyword in `text` OR `headline` OR `tags`, case-insensitive:
+
+```shell
+curl --location --request GET 'http://localhost:8000/api/sources?q=Bucha' \
+--user admin:adminadmin
+```
+
 #### Delete source
 
 Request:
