@@ -52,7 +52,7 @@ def search_telegram_messages(chat_name, search_term, min_date, max_date):
                 timestamp=msg.date,
                 text=msg.message,
                 pinned=msg.pinned,
-                interface="Telegram",
+                interface=INTERFACE_TELEGRAM,
             )
         )
     return results
