@@ -40,8 +40,10 @@ class SourceTests(APITestCase):
         data = {
             "tags": ["tag1", "tag2"],
             "interface": "website",
-            "source": "@Blah",
-            "headline": "",
+            "origin": "example.com",
+            "url": "http://example.com/page1.html",
+            "media_url": "http://example.com/image1.jpg",
+            "headline": "Важливи новини",
             "text": "Щось трапилося",
             "language": "ua",
             "timestamp": dt.datetime(2022, 4, 1, 20, 55, tzinfo=TZ_UTC),
@@ -81,8 +83,10 @@ class SourceTests(APITestCase):
         data = {
             "tags": ["tag1"],
             "interface": "website",
-            "source": "@Blah",
-            "headline": "",
+            "origin": "example.com",
+            "url": "http://example.com/page1.html",
+            "media_url": "http://example.com/image1.jpg",
+            "headline": "Важливи новини",
             "text": "Щось трапилося",
             "language": "ua",
             "timestamp": dt.datetime(2022, 4, 1, 20, 55, tzinfo=TZ_UTC),
@@ -142,13 +146,27 @@ class SourceTests(APITestCase):
                 actual_value = getattr(actual, key)
                 self.assertEqual(value, actual_value)
         # these should be preserved
-        for key in ["interface", "source", "headline", "pinned", "timestamp"]:
+        preserve_fields = [
+            "id",
+            "interface",
+            "origin",
+            "external_id",
+            "url",
+            "media_url",
+            "headline",
+            "pinned",
+        ]
+        for key in preserve_fields:
             self.assertEqual(getattr(source, key), getattr(actual, key))
         self.assertEqual(list(source.tags.names()), list(actual.tags.names()))
 
     def test_list_sources(self):
         """Retrieve sources"""
         source = factories.SourceFactory(
+            origin="example.com",
+            url="http://example.com/page1.html",
+            media_url="http://example.com/image1.jpg",
+            headline="Важливи новини",
             timestamp=dt.datetime(2022, 4, 1, 20, 55, tzinfo=TZ_UTC),
             pinned=True,
         )
@@ -176,8 +194,10 @@ class SourceTests(APITestCase):
         expected = {
             "tags": ["tag1", "tag2"],
             "interface": "api",
-            "source": "http://www.example.com",
-            "headline": "Test headline",
+            "origin": "example.com",
+            "url": "http://example.com/page1.html",
+            "media_url": "http://example.com/image1.jpg",
+            "headline": "Важливи новини",
             "text": "Something happened",
             "language": "en",
             "timestamp": "2022-04-01T20:55:00Z",

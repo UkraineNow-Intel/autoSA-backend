@@ -2,6 +2,7 @@ import datetime as dt
 import factory
 from api import models
 from django.contrib.auth import models as auth_models
+from django.utils.crypto import get_random_string
 
 
 class UserFactory(factory.django.DjangoModelFactory):
@@ -18,7 +19,9 @@ class SourceFactory(factory.django.DjangoModelFactory):
         model = models.Source
 
     interface = models.INTERFACE_API
-    source = "http://www.example.com"
+    origin = "www.example.com"
+    external_id = get_random_string(32)
+    url = "http://www.example.com/some/url/page.html"
     headline = "Test headline"
     text = "Something happened"
     language = models.LANGUAGE_EN
