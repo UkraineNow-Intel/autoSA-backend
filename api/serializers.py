@@ -31,7 +31,9 @@ class SourceSerializer(TaggitSerializer, serializers.HyperlinkedModelSerializer)
         fields = [
             "id",
             "interface",
-            "source",
+            "origin",
+            "external_id",
+            "url",
             "headline",
             "text",
             "language",
