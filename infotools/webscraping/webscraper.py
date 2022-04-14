@@ -3,9 +3,6 @@ from bs4 import BeautifulSoup
 import requests
 import configparser
 
-# TODO: check some sites for more accurate attribute data
-# TODO: change timestamp to article publish time, not access time
-
 
 def get_latest(site):
 
@@ -30,7 +27,7 @@ def get_latest(site):
                 "headline": item.select(config[site]["headline"]),
                 "text": text,
                 "language": config[site]["language"],
-                "timestamp": datetime.time,
+                "timestamp": item.select(config[site]["timestamp"]),
             }
         )
 
