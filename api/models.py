@@ -10,6 +10,7 @@ LANGUAGE_RU = "ru"
 LANGUAGE_UA = "ua"
 
 INTERFACE_TWITTER = "twitter"
+INTERFACE_TELEGRAM = "telegram"
 INTERFACE_WEBSITE = "website"
 INTERFACE_API = "api"
 INTERFACE_TELEGRAM = "telegram"
