@@ -14,7 +14,7 @@ Request:
 
 ```shell
 curl --location --request POST 'http://localhost:8000/api/sources' \
---user admin:adminadnin \
+--user admin:adminadmin \
 --header 'Content-Type: application/json' \
 --data-raw '{
     "tags": [],
@@ -38,14 +38,14 @@ List all, with default page size:
 
 ```shell
 curl --location --request GET 'http://localhost:8000/api/sources' \
---user admin:adminadnin
+--user admin:adminadmin
 ```
 
 List all, while setting page size (limit) and offset:
 
 ```shell
 curl --location --request GET 'http://localhost:8000/api/sources?limit=10&offset=1' \
---user admin:adminadnin
+--user admin:adminadmin
 ```
 
 Filter by timestamp:
@@ -53,41 +53,41 @@ Filter by timestamp:
 ```shell
 # exact
 curl --location --request GET 'http://localhost:8000/api/sources?timestamp=2022-04-01T20%3A25%3A00Z' \
---user admin:adminadnin
+--user admin:adminadmin
 
 # less than
 curl --location --request GET 'http://localhost:8000/api/sources?timestamp__lt=2022-04-01' \
---user admin:adminadnin
+--user admin:adminadmin
 
 # less than or equal
 curl --location --request GET 'http://localhost:8000/api/sources?timestamp__lte=2022-04-01' \
---user admin:adminadnin
+--user admin:adminadmin
 
 # greater than
 curl --location --request GET 'http://localhost:8000/api/sources?timestamp__gt=2022-04-01' \
---user admin:adminadnin
+--user admin:adminadmin
 
 # greater than or equal
 curl --location --request GET 'http://localhost:8000/api/sources?timestamp__gte=2022-04-01' \
---user admin:adminadnin
+--user admin:adminadmin
 
 # range
 curl --location --request GET 'http://localhost:8000/api/sources?timestamp__range=2022-04-01,2022-04-03' \
---user admin:adminadnin
+--user admin:adminadmin
 ```
 
 Filter by interface:
 
 ```shell
 curl --location --request GET 'http://localhost:8000/api/sources?interface=twitter' \
---user admin:adminadnin
+--user admin:adminadmin
 ```
 
 Filter by source:
 
 ```shell
 curl --location --request GET 'http://localhost:8000/api/sources?source=%40Blah' \
---user admin:adminadnin
+--user admin:adminadmin
 ```
 
 Filter by `headline`, same filters for `text`:
@@ -95,15 +95,15 @@ Filter by `headline`, same filters for `text`:
 ```shell
 # exact
 curl --location --request GET 'http://localhost:8000/api/sources?headline=Terrible+events+in+Bucha' \
---user admin:adminadnin
+--user admin:adminadmin
 
 # contains
 curl --location --request GET 'http://localhost:8000/api/sources?headline__contains=Bucha' \
---user admin:adminadnin
+--user admin:adminadmin
 
 # contains, case insensitive
 curl --location --request GET 'http://localhost:8000/api/sources?headline_icontains=bucha' \
---user admin:adminadnin
+--user admin:adminadmin
 ```
 
 Filter by tags:
@@ -111,11 +111,11 @@ Filter by tags:
 ```shell
 # one tag
 curl --location --request GET 'http://localhost:8000/api/sources?tags=Bucha' \
---user admin:adminadnin
+--user admin:adminadmin
 
 # multiple tags
-curl --location --request GET 'http://localhost:8000/api/sources?tags=Bucha' \
---user admin:adminadnin
+curl --location --request GET 'http://localhost:8000/api/sources?tags=Bucha,Kharkiv' \
+--user admin:adminadmin
 ```
 
 #### Delete source
@@ -124,5 +124,5 @@ Request:
 
 ```shell
 curl --location --request DELETE 'http://localhost:8000/api/sources/1' \
---user admin:adminadnin
+--user admin:adminadmin
 ```
