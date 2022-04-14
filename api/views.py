@@ -105,9 +105,9 @@ class SourceFilter(FilterSet):
     def multi_field_search(self, queryset, name, value):
         """Search in headline, text or tags"""
         return queryset.filter(
-            Q(text__icontains=value) |
-            Q(headline__icontains=value) |
-            Q(tags__name__icontains=value)
+            Q(text__icontains=value)
+            | Q(headline__icontains=value)
+            | Q(tags__name__icontains=value)
         ).distinct()
 
     class Meta:
