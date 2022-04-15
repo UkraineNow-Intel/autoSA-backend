@@ -54,8 +54,5 @@ jobs:
       - name: Run Black
         run: make black
 
-      - name: Run pycodestyle
-        run: make pycodestyle
-
       - name: Run flake8
         run: make flake8
