@@ -34,7 +34,7 @@ curl --location --request POST 'http://localhost:8000/api/sources' \
 
 Sources are sorted by timestamp in descending order (newest first).
 
-List all, with default page size. Bu default, `deleted` will be excluded:
+List all, with default page size. By default, `deleted` will be excluded:
 
 ```shell
 curl --location --request GET 'http://localhost:8000/api/sources' \
