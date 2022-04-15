@@ -144,3 +144,7 @@ CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_SERIALIZER = "json"
 CELERY_TIMEZONE = "UTC"
 CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers:DatabaseScheduler"
+
+# web scraping
+# these will be looked up in scrapeConfig.ini and scraped
+WEBSCRAPER_SITE_KEYS = ["liveuamap"]

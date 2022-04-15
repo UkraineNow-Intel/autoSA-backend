@@ -12,13 +12,10 @@ from rest_framework.permissions import IsAuthenticated, DjangoModelPermissions
 from rest_framework.views import APIView
 from django.contrib.auth.models import Permission
 from django_filters import CharFilter
+from django.conf import settings
 from django.db.models import Q
 from django_filters.rest_framework import FilterSet
-
-import sys
-
-sys.path.append("..")
-from infotools.webscraper import get_latest_from_liveuamap
+from infotools.webscraping import webscraper
 
 
 def getPermissionsForUser(user):
@@ -68,46 +65,42 @@ def get_source_in_database(source_item):
 
 def refresh(request):
     """
-    Get's new data from different interfaces (TODO: currently only liveuamap) and adds it to the database
-
-    parameters:
-    - name: override
-      description: Overwrites existing entries with new data if defined (e.g. `refresh/?override`)
-      required: false
-      default: false
+    Gets new data from different interfaces and adds it to the database.
+    If items have the same external_id, they will be overwritten.
     """
-    override_existing = request.GET.get("override", "false") == ""
-    data = get_latest_from_liveuamap()
-    sourceSerial = SourceSerializer()
+    overwrite_existing = request.GET.get("override", "false") == ""
 
-    # check if source is duplicate
-    number_of_duplicates = 0
-    newly_added = 0
-    for item in data:
-        already_in_db = get_source_in_database(item)
-        if len(already_in_db) > 0:
-            number_of_duplicates += 1
-            if override_existing:
-                instance = Source.objects.get(id=already_in_db[0]["id"])
-                sourceSerial.update(instance, item)
-            continue
-        sourceSerial.create(item)
-        newly_added += 1
-    if override_existing:
-        return JsonResponse(
-            {
+    response_data = {}
+    for site_key in settings.WEBSCRAPER_SITE_KEYS:
+        data = webscraper.get_latest(site_key)
+        sourceSerial = SourceSerializer()
+
+        # check if source is duplicate
+        number_of_duplicates = 0
+        newly_added = 0
+        for item in data:
+            already_in_db = get_source_in_database(item)
+            if len(already_in_db) > 0:
+                number_of_duplicates += 1
+                if overwrite_existing:
+                    instance = Source.objects.get(id=already_in_db[0]["id"])
+                    sourceSerial.update(instance, item)
+                continue
+            sourceSerial.create(item)
+            newly_added += 1
+        if overwrite_existing:
+            response_data[site_key] = {
                 "detail": "Refresh completed",
                 "overwritten": number_of_duplicates,
                 "newly_added": newly_added,
             }
-        )
-    return JsonResponse(
-        {
-            "detail": "Refresh completed",
-            "already_inserted": number_of_duplicates,
-            "newly_added": newly_added,
-        }
-    )
+        else:
+            response_data[site_key] = {
+                "detail": "Refresh completed",
+                "already_inserted": number_of_duplicates,
+                "newly_added": newly_added,
+            }
+    return JsonResponse(response_data)
 
 
 @require_POST
