@@ -1,17 +1,11 @@
 import datetime as dt
 import factory
+import uuid
 from api import models
-from django.contrib.auth import models as auth_models
-from django.utils.crypto import get_random_string
 
 
-class UserFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = auth_models.User
-
-    username = "apitest"
-    password = "blah"
-    is_superuser = True
+def uuid_as_str():
+    return uuid.uuid4().hex
 
 
 class SourceFactory(factory.django.DjangoModelFactory):
@@ -20,7 +14,7 @@ class SourceFactory(factory.django.DjangoModelFactory):
 
     interface = models.INTERFACE_API
     origin = "www.example.com"
-    external_id = get_random_string(32)
+    external_id = factory.LazyFunction(uuid_as_str)
     url = "http://www.example.com/some/url/page.html"
     headline = "Test headline"
     text = "Something happened"

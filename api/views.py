@@ -11,6 +11,9 @@ from rest_framework.authentication import SessionAuthentication, BasicAuthentica
 from rest_framework.permissions import IsAuthenticated, DjangoModelPermissions
 from rest_framework.views import APIView
 from django.contrib.auth.models import Permission
+from django_filters import CharFilter
+from django.db.models import Q
+from django_filters.rest_framework import FilterSet
 
 
 def getPermissionsForUser(user):
@@ -84,6 +87,40 @@ def logout_view(request):
     return JsonResponse({"detail": "Successfully logged out."})
 
 
+class TagsFilter(CharFilter):
+    def filter(self, qs, value):
+        if value:
+            tags = [tag.strip().lower() for tag in value.split(",")]
+            qs = qs.filter(tags__name__in=tags).distinct()
+
+        return qs
+
+
+class SourceFilter(FilterSet):
+    """Filter for Sources"""
+
+    tags = TagsFilter("tags")
+    q = CharFilter(method="multi_field_search", lookup_expr="icontains")
+
+    def multi_field_search(self, queryset, name, value):
+        """Search in headline, text or tags"""
+        return queryset.filter(
+            Q(text__icontains=value)
+            | Q(headline__icontains=value)
+            | Q(tags__name__icontains=value)
+        ).distinct()
+
+    class Meta:
+        model = Source
+        fields = {
+            "interface": ["exact"],
+            "origin": ["exact"],
+            "headline": ["exact", "contains", "icontains"],
+            "text": ["exact", "contains", "icontains"],
+            "timestamp": ["exact", "lt", "lte", "gt", "gte", "range"],
+        }
+
+
 class SourceViewSet(viewsets.ModelViewSet):
     """List or retrieve sources"""
 
@@ -91,6 +128,11 @@ class SourceViewSet(viewsets.ModelViewSet):
     serializer_class = SourceSerializer
     authentication_classes = [SessionAuthentication, BasicAuthentication]
     permission_classes = [DjangoModelPermissions]
+    filterset_class = SourceFilter
+
+    def filter_queryset(self, queryset):
+        queryset = super().filter_queryset(queryset)
+        return queryset.order_by("-timestamp")
 
 
 class TranslationViewSet(viewsets.ModelViewSet):
