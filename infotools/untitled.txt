@@ -7,9 +7,7 @@ TELEGRAM_API_ID = config("TELEGRAM_API_ID", cast=int)
 TELEGRAM_API_HASH = config("TELEGRAM_API_HASH")
 
 
-def search_telegram_messages(
-    chat_name=None, search_term=None, min_date=None, max_date=None
-):
+def search_telegram_messages(chat_name=None, search_term=None, min_date=None, max_date=None):
     """Get Messages from Telegram, will block until async calls complete.
 
     Parameters
@@ -66,7 +64,7 @@ def search_telegram_messages(
     ch_ids_to_name = {c.id: c.username for c in result.chats}
     user_ids_to_name = {u.id: u.username for u in result.users}
     for msg in result.messages:
-        if hasattr(msg.peer_id, "channel_id"):
+        if hasattr(msg.peer_id, 'channel_id'):
             origin = ch_ids_to_name[msg.peer_id.channel_id]
         else:
             origin = user_ids_to_name[msg.peer_id.user_id]
