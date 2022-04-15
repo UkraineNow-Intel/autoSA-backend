@@ -2,6 +2,7 @@ import uuid
 from django.contrib.gis.db import models
 from django.utils import timezone
 from taggit.managers import TaggableManager
+from psqlextra.models import PostgresModel
 
 
 LANGUAGE_EN = "en"
@@ -28,7 +29,7 @@ INTERFACES = (
 )
 
 
-class Source(models.Model):
+class Source(PostgresModel):
     """Represents a single event / piece of information from twitter,
     external API, web, etc."""
 
@@ -48,12 +49,12 @@ class Source(models.Model):
     # out and create our own.
     external_id = models.CharField(max_length=250, default=uuid.uuid4, unique=True)
     # url of original telegram message, tweet, website page
-    url = models.CharField(max_length=2000, blank=True)
+    url = models.CharField(max_length=2000, blank=True, default="")
     # image or video if present
-    media_url = models.CharField(max_length=2000, blank=True)
-    headline = models.CharField(max_length=250, blank=True)
+    media_url = models.CharField(max_length=2000, blank=True, default="")
+    headline = models.CharField(max_length=250, blank=True, default="")
     text = models.TextField()
-    language = models.CharField(max_length=2, choices=LANGUAGES)
+    language = models.CharField(max_length=2, choices=LANGUAGES, default=LANGUAGE_EN)
     pinned = models.BooleanField(default=False)
     # when published
     timestamp = models.DateTimeField(default=timezone.now)

@@ -16,6 +16,7 @@ from django.conf import settings
 from django.db.models import Q
 from django_filters.rest_framework import FilterSet
 from infotools.webscraping import webscraper
+from psqlextra.query import ConflictAction
 
 
 def getPermissionsForUser(user):
@@ -54,52 +55,45 @@ def get_csrf(request):
     return response
 
 
-def get_source_in_database(source_item):
-    """returns true if item with same text + source + interface is already in database"""
-    return Source.objects.values().filter(
-        text=source_item["text"],
-        source=source_item["source"],
-        interface=source_item["interface"],
+def refresh(request):
+    """Gets new data from different interfaces and adds it to the database.
+    If "overwrite==true" and items have the same external_id, they will be
+    updated.
+    """
+    overwrite_existing = request.GET.get("overwrite", "false") in ("true", "1")
+    conflict_action = (
+        ConflictAction.UPDATE if overwrite_existing else ConflictAction.NOTHING
     )
 
-
-def refresh(request):
-    """
-    Gets new data from different interfaces and adds it to the database.
-    If items have the same external_id, they will be overwritten.
-    """
-    overwrite_existing = request.GET.get("override", "false") == ""
-
     response_data = {}
+    failed_items = []
     for site_key in settings.WEBSCRAPER_SITE_KEYS:
         data = webscraper.get_latest(site_key)
-        sourceSerial = SourceSerializer()
-
-        # check if source is duplicate
-        number_of_duplicates = 0
-        newly_added = 0
+        processed = 0
         for item in data:
-            already_in_db = get_source_in_database(item)
-            if len(already_in_db) > 0:
-                number_of_duplicates += 1
-                if overwrite_existing:
-                    instance = Source.objects.get(id=already_in_db[0]["id"])
-                    sourceSerial.update(instance, item)
-                continue
-            sourceSerial.create(item)
-            newly_added += 1
-        if overwrite_existing:
-            response_data[site_key] = {
-                "detail": "Refresh completed",
-                "overwritten": number_of_duplicates,
-                "newly_added": newly_added,
-            }
-        else:
-            response_data[site_key] = {
-                "detail": "Refresh completed",
-                "already_inserted": number_of_duplicates,
-                "newly_added": newly_added,
-            }
+            try:
+                Source.objects.on_conflict(
+                    ["external_id"], conflict_action
+                ).insert_and_get(**item)
+                processed += 1
+            except Exception as x:
+                # log exception, do not raise
+                failed_items.append(
+                    {
+                        "item": item,
+                        "exception_class": x.__class__.__name__,
+                        "exception_message": str(x),
+                    }
+                )
+        response_data[site_key] = {
+            "detail": "Refresh completed",
+            "overwrite": overwrite_existing,
+            "processed": processed,
+            "errors": {
+                "total": len(failed_items),
+                "items": failed_items,
+            },
+        }
     return JsonResponse(response_data)
 
 

@@ -1,8 +1,10 @@
+import tzlocal
 from bs4 import BeautifulSoup
 import os
 import requests
 import configparser
 import dateparser
+import datetime as dt
 
 
 def read_config():
@@ -13,9 +15,12 @@ def read_config():
     return config
 
 
-def parse_human_timestamp(ts):
-    """Parse timestamp out of humanized ts."""
-    return dateparser.parse(ts).replace(second=0, microsecond=0)
+def parse_text_timestamp(ts):
+    """Parse timestamp, possibly humanized."""
+    try:
+        return dateparser.parse(ts).replace(second=0, microsecond=0)
+    except:
+        return dt.datetime.utcnow()
 
 
 def get_or_eval(site_config, key, item):
@@ -40,15 +45,14 @@ def get_latest(site):
     soup = BeautifulSoup(res.content, "html.parser")
 
     items = soup.select(config[site]["items"])
-    timestamp_humanized = config[site]["timestamp_humanized"] or False
+    local_timezone = tzlocal.get_localzone()
 
     item_dicts = []
 
     for item in items:
         timestamp = item.select_one(config[site]["timestamp"]).text
-        if timestamp_humanized:
-            timestamp = parse_human_timestamp(timestamp)
-        headline = get_or_eval(config[site], "headline", item)
+        timestamp = parse_text_timestamp(timestamp).replace(tzinfo=local_timezone)
+        headline = get_or_eval(config[site], "headline", item)[:250]
         external_id = get_or_eval(config[site], "external_id", item)
 
         if not external_id:
