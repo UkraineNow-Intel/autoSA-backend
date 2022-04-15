@@ -59,6 +59,15 @@ def source_set():
 
 
 @pytest.fixture
+def bool_source_set():
+    sources = []
+    sources.append(factories.SourceFactory(pinned=True, deleted=False))
+    sources.append(factories.SourceFactory(pinned=False, deleted=False))
+    sources.append(factories.SourceFactory(pinned=False, deleted=True))
+    return sources
+
+
+@pytest.fixture
 def multi_search_source_set():
     """Helper method to create multiple sources"""
 
@@ -507,3 +516,39 @@ def test_sort(apiclient, admin_user, source_set):
     results = data["results"]
     timestamps = [r["timestamp"] for r in results]
     assert sorted(timestamps, reverse=True) == timestamps
+
+
+@pytest.mark.parametrize(
+    ("query", "expected_count"),
+    [
+        ({"pinned": "true"}, 1),
+        ({"pinned": "false"}, 1),
+        ({"deleted": "true"}, 1),
+        ({"deleted": "false"}, 2),
+    ],
+)
+def test_boolean_filters(apiclient, admin_user, bool_source_set, query, expected_count):
+    """Filter by boolean field (pinned/deleted)"""
+    apiclient.force_authenticate(user=admin_user)
+    url = reverse("source-list")
+
+    response = apiclient.get(url, data=query, format="json")
+    results = response.json()["results"]
+    assert expected_count == len(results)
+
+
+@pytest.mark.parametrize(
+    ("query", "expected_count"),
+    [
+        ({}, 2),  # if not specifically requested, exclude deleted
+        ({"deleted": "any"}, 3),
+    ],
+)
+def test_deleted_filters(apiclient, admin_user, bool_source_set, query, expected_count):
+    """Filter by deleted"""
+    apiclient.force_authenticate(user=admin_user)
+    url = reverse("source-list")
+
+    response = apiclient.get(url, data=query, format="json")
+    results = response.json()["results"]
+    assert expected_count == len(results)

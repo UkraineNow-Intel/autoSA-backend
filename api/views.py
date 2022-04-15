@@ -1,6 +1,6 @@
 from rest_framework import viewsets
-from .serializers import SourceSerializer, TranslationSerializer, LocationSerializer
-from .models import Source, Translation, Location
+from .serializers import SourceSerializer, TranslationSerializer
+from .models import Source, Translation
 import json
 from django.contrib.auth import authenticate, login, logout
 from django.http import JsonResponse
@@ -102,6 +102,17 @@ class SourceFilter(FilterSet):
     tags = TagsFilter("tags")
     q = CharFilter(method="multi_field_search", lookup_expr="icontains")
 
+    @property
+    def qs(self):
+        parent = super().qs
+        deleted_val = self.request.GET.get("deleted", "false").lower()
+        if deleted_val == "any":
+            return parent
+        deleted_bool = {"true": True, "false": False, "1": True, "0": False}.get(
+            deleted_val, False
+        )
+        return parent.filter(deleted=deleted_bool)
+
     def multi_field_search(self, queryset, name, value):
         """Search in headline, text or tags"""
         return queryset.filter(
@@ -118,6 +129,8 @@ class SourceFilter(FilterSet):
             "headline": ["exact", "contains", "icontains"],
             "text": ["exact", "contains", "icontains"],
             "timestamp": ["exact", "lt", "lte", "gt", "gte", "range"],
+            "deleted": ["exact"],
+            "pinned": ["exact"],
         }
 
 
