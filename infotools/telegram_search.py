@@ -1,7 +1,7 @@
 from decouple import config
 from telethon.sync import TelegramClient
 from telethon import functions, types
-from api.models import INTERFACE_TELEGRAM
+from api.models import INTERFACE_TELEGRAM, LANGUAGE_EN
 
 TELEGRAM_API_ID = config("TELEGRAM_API_ID", cast=int)
 TELEGRAM_API_HASH = config("TELEGRAM_API_HASH")
@@ -51,8 +51,8 @@ def search_telegram_messages(chat_name, search_term, min_date, max_date):
             dict(
                 timestamp=msg.date,
                 text=msg.message,
-                pinned=msg.pinned,
                 interface=INTERFACE_TELEGRAM,
+                language=LANGUAGE_EN,
             )
         )
     return results
