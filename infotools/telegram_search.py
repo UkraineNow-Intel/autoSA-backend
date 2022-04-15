@@ -44,8 +44,10 @@ def search_telegram_messages(chat_name, search_term, min_date, max_date):
                 from_id=None,
             )
         )
-
+    
     results = []
+    # Create dictionary of channel ids to channel names for lookup
+    ch_ids_to_name = {c.id : c.username for c in result.chats}
     for msg in result.messages:
         results.append(
             dict(
@@ -53,6 +55,7 @@ def search_telegram_messages(chat_name, search_term, min_date, max_date):
                 text=msg.message,
                 interface=INTERFACE_TELEGRAM,
                 language=LANGUAGE_EN,
+                origin=ch_ids_to_name[msg.peer_id.channel_id],
             )
         )
     return results
