@@ -1,145 +1,87 @@
 """
-We need to continously be collecting data from twitter accounts.
-
-Requires TWITTER_BEARER_TOKEN setting to be filled for this to work.
+Requires TWITTER_BEARER_TOKEN setting.
 """
-
-from typing import Union
-
-import pandas as pd
+import datetime as dt
+import textwrap
+import pytz
 import tweepy
-from tweepy.user import User
-from tweepy.client import Response
-from tweepy.tweet import Tweet
-
-from .settings import TWITTER_BEARER_TOKEN, TWITTER_SOURCE_ACCOUNTS
-from .utils import represents_int
-
-client = tweepy.Client(TWITTER_BEARER_TOKEN)
 
 
-class TwitterAccount:
-    """Simple wrapper to represent a twitter account.
-
-    Parameters
-    ----------
-    username_or_id: str or int
-        An existing twitter account's username with or without
-        the '@' symbol or a twitter id.
-
-    Examples
-    --------
-    Constructing a TwitterAccount
-
-    >>> user  = TwitterAccount('ZackPlauche') # Via username without the '@'
-    >>> user2 = TwitterAccount('@ZackPlauche') # Via atname (username with the '@')
-    >>> user3 = TwitterAccount(1227703724778364928) # Via id as int
-    >>> user4 = TwitterAccount('1227703724778364928') # Via id as str
-
-    Access a Twitter account's data
-
-    >>> user.username
-    ZackPlauche
-    >>> user.atname
-    @ZackPlauche
-    >>> user.name
-    Zack Plauché
-    >>> user.id
-    1227703724778364928
-
-    Get a user's tweets
-
-    >>> tweets = user.get_tweets()  # Get latest 5 tweets in a list.
-    >>> hundred_tweets = user.get_tweets(100)  # Get latest 100 tweets (maximum 100, min 5) # noqa
-    >>> latest_tweet = user.get_latest_tweet()
-    """
-
-    def __init__(self, username_or_id):
-        user = get_twitter_acccount(username_or_id)
-        self.user = user
-        self.username = user.username
-        self.atname = f"@{user.username}"
-        self.id = user.id
-        self.name = user.name
-
-    def __repr__(self):
-        return f"<TwitterAccount: {self.name} (@{self.username})>"
-
-    def get_tweets(self, max_results=5, **kwargs) -> list[Tweet]:
-        """Gets latest tweets from a twitter account limited by max_results.
-
-        Parameters
-        ----------
-        max_results: int, defaults to 5
-            The max number of a user's latest tweets to be returned. Must be a
-            minimum of 5, maximum of 100 according to tweepy's api.
-
-        Additional kwargs can be found from the tweepy docs here:
-        https://docs.tweepy.org/en/stable/client.html#tweepy.Client.get_users_tweets
-        """
-        tweet_fields = [
-            "author_id",
-            "created_at",
-        ]  # Needed to have author reference and datetime data on the returned tweets
-        return client.get_users_tweets(
-            id=self.id, max_results=max_results, tweet_fields=tweet_fields, **kwargs
-        ).data
-
-    def get_latest_tweet(self) -> Tweet:
-        return self.get_tweets(5)[0]
+USER_FIELDS = "id,created_at,name,username,verified,location,url"
+TWEET_FIELDS = "id,created_at,text,author_id,geo,source,lang,attachments,entities"
+PLACE_FIELDS = "id,name,country_code,place_type,full_name,country,contained_within,geo"
+MEDIA_FIELDS = "media_key,type,url,preview_image_url,alt_text"
+EXPANSIONS = "author_id,attachments.media_keys,geo.place_id"
+MAX_QUERY_LEN = 512
 
 
-def get_twitter_acccount(username_or_id: Union[str, int]) -> User:
-    """Get a twitter account from username or id twitter account identifiers.
-
-    Paramters
-    ---------
-    username_or_id: int or str
-        The username or numeric id for a Twitter account. username can be with
-        or without the '@' symbol. id can be either str or int types.
-    """
-
-    if not isinstance(username_or_id, (str, int)):
-        raise ValueError(f"identifer {username_or_id} must be str or int.")
-
-    if represents_int(username_or_id):
-        twitter_id = username_or_id
-        response: Response = client.get_user(id=twitter_id)
-    else:
-        username = (
-            username_or_id if not username_or_id.startswith("@") else username_or_id[1:]
-        )
-        response: Response = client.get_user(username=username)
-
-    # Check to make sure a twitter account with this username exists.
-    if response.errors:
-        raise ValueError(response.errors[0]["detail"])
-
-    user: User = response.data
-    return user
-
-
-def get_latest_tweets_from_sources(max_results=5) -> list[Tweet]:
-    """Get latest tweets from all TWITTER_SOURCE_ACCOUNTS"""
-    accounts = [TwitterAccount(username) for username in TWITTER_SOURCE_ACCOUNTS]
-    latest_tweets = [
-        tweet for account in accounts for tweet in account.get_tweets(max_results)
-    ]
-    return latest_tweets
+def _generate_sources(response):
+    """Generate dicts suitable for converting to sources.
+    Returns iterable.
+    param response: class tweepy.Response"""
+    users = {
+        user.id: user for user in response.includes.get("users", [])
+    }
+    medias = {
+        media.media_key: media for media in response.includes.get("media", [])
+    }
+    if not response.data:
+        return None
+    for tweet in response.data:
+        user = users[tweet.author_id]
+        attachments = getattr(tweet, "attachments", None) or {}
+        media_keys = attachments.get("media_keys", None) or []
+        source_data = {
+            "interface": "twitter",
+            "origin": user.username,
+            "external_id": tweet.id,
+            "language": tweet.lang or "en",
+            "url": f"https://twitter.com/{user.username}/status/{tweet.id}",
+            "text": tweet.text,
+            "timestamp": tweet.created_at,
+        }
+        if media_keys:
+            media_key = media_keys[0]
+            media = medias[media_key]
+            source_data["media_url"] = media.url
+        yield source_data
 
 
-def latest_tweets_to_dataframe() -> pd.DataFrame:
-    """Get latest tweets from TWITTER_SOURCE_ACCOUNTS and
-    return them in a dataframe format."""
-    tweets = get_latest_tweets_from_sources()
-    df = pd.DataFrame([tweet.data for tweet in tweets])
-    df["author"] = df["author_id"].apply(
-        lambda author_id: TwitterAccount(author_id).atname
+def _split_queries(twitter_accounts):
+    query = " OR ".join([f"from:{acc.lstrip('@')}" for acc in twitter_accounts])
+    queries = textwrap.wrap(query, width=MAX_QUERY_LEN)
+    for i, query in enumerate(queries):
+        queries[i] = query.lstrip("OR ").rstrip(" OR")
+    return queries
+
+
+def _get_default_start_time():
+    """By default, retrieve from 24 hours back until now."""
+    return (dt.datetime.utcnow() - dt.timedelta(hours=1)).replace(
+        tzinfo=pytz.UTC
     )
-    del df["author_id"]
-    return df
 
 
-def latest_tweets_to_csv(csv_filename: str) -> None:
-    df = latest_tweets_to_dataframe()
-    df.to_csv(csv_filename, index=False)
+def search_recent_tweets(
+    settings,
+    start_time=None,
+    end_time=None,
+):
+    client = tweepy.Client(settings["TWITTER_BEARER_TOKEN"])
+    queries = _split_queries(settings["TWITTER_ACCOUNTS"])
+    start_time = start_time or _get_default_start_time()
+    for query in queries:
+        for response in tweepy.Paginator(
+            client.search_recent_tweets,
+            query=query,
+            start_time=start_time,
+            end_time=end_time,
+            max_results=100,
+            tweet_fields=TWEET_FIELDS,
+            user_fields=USER_FIELDS,
+            place_fields=PLACE_FIELDS,
+            media_fields=MEDIA_FIELDS,
+            expansions=EXPANSIONS,
+        ):
+            for source_sata in _generate_sources(response):
+                yield source_sata
