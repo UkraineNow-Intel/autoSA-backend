@@ -91,6 +91,8 @@ if __name__ == "__main__":
     import datetime as dt
     from backports import zoneinfo
 
+    TZ_UTC = zoneinfo.ZoneInfo("UTC")
+
     t = TelegramSearch(TELEGRAM_API_ID, TELEGRAM_API_HASH)
 
     TZ_UTC = zoneinfo.ZoneInfo("UTC")
@@ -102,12 +104,15 @@ if __name__ == "__main__":
         max_date=dt.datetime(2022, 4, 12, 0, 0, 0, tzinfo=TZ_UTC),
     )
     print(result)
+
     print("No min max date term")
     result = t.search_telegram_messages(
         chat_name="t.me/ukrainearmyforce",
         search_term="Харків",
     )
     print(result)
+
+    print("No search term")
     result = t.search_telegram_messages(
         chat_name="t.me/ukrainearmyforce",
         search_term="Харків",
@@ -115,6 +120,8 @@ if __name__ == "__main__":
         max_date=dt.datetime(2022, 4, 12, 0, 0, 0, tzinfo=TZ_UTC),
     )
     print(result)
+
+    print("Everything given")
     result = t.search_telegram_messages(
         chat_name="t.me/ukrainearmyforce",
         search_term=None,
