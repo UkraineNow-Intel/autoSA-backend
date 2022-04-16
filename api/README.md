@@ -149,6 +149,6 @@ curl --location --request GET 'http://localhost:8000/api/refresh/' \
 --user admin:adminadmin
 
 # update items if external_id exists
-curl --location --request GET 'http://localhost:8000/api/refresh/' \
+curl --location --request GET 'http://localhost:8000/api/refresh/?overwrite=true' \
 --user admin:adminadmin
 ```
