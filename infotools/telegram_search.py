@@ -123,7 +123,7 @@ if __name__ == "__main__":
     print(len(result))
     print(result)
 
-    print("No min max date term")
+    print("No min max date")
     result = t.search_telegram_messages(
         chat_name="t.me/ukrainearmyforce",
         search_term="Харків",
@@ -134,7 +134,7 @@ if __name__ == "__main__":
     print("No search term")
     result = t.search_telegram_messages(
         chat_name="t.me/ukrainearmyforce",
-        search_term="Харків",
+        search_term=None,
         min_date=dt.datetime(2022, 4, 11, 0, 0, 0, tzinfo=TZ_UTC),
         max_date=dt.datetime(2022, 4, 12, 0, 0, 0, tzinfo=TZ_UTC),
     )
@@ -144,10 +144,9 @@ if __name__ == "__main__":
     print("Everything given")
     result = t.search_telegram_messages(
         chat_name="t.me/ukrainearmyforce",
-        search_term=None,
+        search_term="Харків",
         min_date=dt.datetime(2022, 4, 11, 0, 0, 0, tzinfo=TZ_UTC),
         max_date=dt.datetime(2022, 4, 12, 0, 0, 0, tzinfo=TZ_UTC),
     )
-    print("No search term")
     print(len(result))
     print(result)
