@@ -19,12 +19,14 @@ INSTALLED_APPS = [
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
+    "django.contrib.postgres",
     "django.contrib.staticfiles",
     "django.contrib.gis",
     "storages",
     "django_filters",
     "django_extensions",
     "django_celery_beat",
+    "psqlextra",
     "taggit",
     "rest_framework",
     "rest_framework_gis",
@@ -67,10 +69,11 @@ WSGI_APPLICATION = "website.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
 
+POSTGRES_EXTRA_DB_BACKEND_BASE = "django.contrib.gis.db.backends.postgis"
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.contrib.gis.db.backends.postgis",
+        "ENGINE": "psqlextra.backend",
         "NAME": "autosa",
         "USER": environ.get("PGUSER", None) or "autosa",
         "PASSWORD": environ.get("PGPASSWORD", None) or "autosa",
@@ -144,3 +147,7 @@ CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_SERIALIZER = "json"
 CELERY_TIMEZONE = "UTC"
 CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers:DatabaseScheduler"
+
+# web scraping
+# these will be looked up in scrapeConfig.ini and scraped
+WEBSCRAPER_SITE_KEYS = ["liveuamap"]

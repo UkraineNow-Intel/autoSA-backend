@@ -12,8 +12,15 @@ from rest_framework.permissions import IsAuthenticated, DjangoModelPermissions
 from rest_framework.views import APIView
 from django.contrib.auth.models import Permission
 from django_filters import CharFilter
+from django.conf import settings
 from django.db.models import Q
 from django_filters.rest_framework import FilterSet
+from infotools.webscraping import webscraper
+from psqlextra.query import ConflictAction
+from more_itertools import chunked
+
+
+INSERT_BATCH_SIZE = 1000
 
 
 def getPermissionsForUser(user):
@@ -50,6 +57,49 @@ def get_csrf(request):
     response = JsonResponse({"detail": "CSRF cookie set"})
     response["X-CSRFToken"] = get_token(request)
     return response
+
+
+def refresh(request):
+    """Gets new data from different interfaces and adds it to the database.
+    If "overwrite==true" and items have the same external_id, they will be
+    updated.
+    """
+    overwrite_existing = request.GET.get("overwrite", "false") in ("true", "1")
+    conflict_action = (
+        ConflictAction.UPDATE if overwrite_existing else ConflictAction.NOTHING
+    )
+
+    response_data = {}
+    errors = []
+    for site_key in settings.WEBSCRAPER_SITE_KEYS:
+        processed = 0
+        data = webscraper.get_latest(site_key)
+        for items_chunk in chunked(data, INSERT_BATCH_SIZE):
+            try:
+                (
+                    Source.objects.on_conflict(
+                        ["external_id"], conflict_action
+                    ).bulk_insert(items_chunk)
+                )
+            except Exception as x:
+                # log exception, do not raise
+                errors.append(
+                    {
+                        "exception_class": x.__class__.__name__,
+                        "exception_message": str(x),
+                    }
+                )
+            processed += len(items_chunk)
+        response_data[site_key] = {
+            "detail": "Refresh completed",
+            "overwrite": overwrite_existing,
+            "processed": processed,
+            "errors": {
+                "total": len(errors),
+                "exceptions": errors,
+            },
+        }
+    return JsonResponse(response_data)
 
 
 @require_POST
