@@ -1,7 +1,8 @@
 import datetime as dt
 import json
-from pprint import pprint
+import logging
 
+import dateparser
 import pytz
 from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
@@ -20,13 +21,14 @@ from rest_framework.authentication import BasicAuthentication, SessionAuthentica
 from rest_framework.permissions import DjangoModelPermissions, IsAuthenticated
 from rest_framework.views import APIView
 
-from infotools.twitter import search_recent_tweets
+from infotools import twitter
 from infotools.webscraping import webscraper
 
 from .models import Source, Translation
 from .serializers import SourceSerializer, TranslationSerializer
 
 INSERT_BATCH_SIZE = 500
+logger = logging.getLogger(__name__)
 
 
 def getPermissionsForUser(user):
@@ -70,6 +72,28 @@ def _default_refresh_start_time():
     return (dt.datetime.utcnow() - dt.timedelta(hours=1)).replace(tzinfo=pytz.UTC)
 
 
+def _oldest_refresh_start_time():
+    """We can look from 7 days back until now."""
+    return (dt.datetime.utcnow() - dt.timedelta(days=7)).replace(tzinfo=pytz.UTC)
+
+
+def _parse_refresh_time(date_string, default_value=None, oldest_value=None):
+    """Parse provided datetime from string. If can't parse, fallback to default."""
+    try:
+        if date_string:
+            res = dateparser.parse(date_string)
+            if oldest_value and res < oldest_value:
+                # twitter search will error out if we search earlier than
+                # oldest_value. Don't set value at all in this case.
+                res = None
+        else:
+            res = default_value
+        return res
+    except Exception:
+        logger.exception("Unable to parse date: %s", date_string)
+        return default_value
+
+
 def refresh(request):
     """Gets new data from different interfaces and adds it to the database.
     If "overwrite==true" and items have the same external_id, they will be
@@ -79,14 +103,33 @@ def refresh(request):
         end_time (example: 2022-04-12 or 2022-04-12T00:00:00Z)
     """
     overwrite_existing = request.GET.get("overwrite", "false") in ("true", "1")
-    start_time = request.GET.get("start_time", None) or _default_refresh_start_time()
+    start_time = request.GET.get("start_time", None)
     end_time = request.GET.get("end_time", None)
+
+    start_time = _parse_refresh_time(
+        start_time, _default_refresh_start_time(), _oldest_refresh_start_time()
+    )
+    end_time = _parse_refresh_time(end_time, None)
+
+    logger.info(
+        "Refresh started with start_time: %s, end_time: %s, overwrite: %s",
+        start_time,
+        end_time,
+        overwrite_existing,
+    )
 
     conflict_action = (
         ConflictAction.UPDATE if overwrite_existing else ConflictAction.NOTHING
     )
 
-    response_data = {}
+    response_data = {
+        "sites": {},
+        "meta": {
+            "overwrite": overwrite_existing,
+            "start_time": start_time,
+            "end_time": end_time,
+        },
+    }
 
     def add_response_error(x: Exception, errors: list):
         """Append error to list for site"""
@@ -99,9 +142,8 @@ def refresh(request):
 
     def add_response_data(key, processed, errors):
         """Append data to response for site"""
-        response_data[key] = {
+        response_data["sites"][key] = {
             "detail": "Refresh completed",
-            "overwrite": overwrite_existing,
             "processed": processed,
             "errors": {
                 "total": len(errors),
@@ -111,6 +153,7 @@ def refresh(request):
 
     def insert_chunk(chunk, errors):
         """Insert chunk of data. If fails, append exception to errors."""
+        logger.info("Inserting %s records", len(chunk))
         try:
             (
                 Source.objects.on_conflict(
@@ -120,8 +163,9 @@ def refresh(request):
         except Exception as x:
             # log exception, do not raise
             add_response_error(x, errors)
+            logger.exception("Failed inserting data.")
             for value in chunk:
-                pprint(value)
+                logger.debug(str(value))
         return errors
 
     # web scraper data
@@ -141,15 +185,17 @@ def refresh(request):
     }
     processed = 0
     errors = []
-    for chunk in chunked(
-        search_recent_tweets(
+    try:
+        tweets = twitter.search_recent_tweets(
             twitter_settings, start_time=start_time, end_time=end_time
-        ),
-        INSERT_BATCH_SIZE,
-    ):
-        errors = insert_chunk(chunk, errors)
-        processed += len(chunk)
-    add_response_data("twitter", processed, errors)
+        )
+        for chunk in chunked(tweets, INSERT_BATCH_SIZE):
+            errors = insert_chunk(chunk, errors)
+            processed += len(chunk)
+        add_response_data("twitter", processed, errors)
+    except Exception as x:
+        add_response_error(x, errors)
+        add_response_data("twitter", processed, errors)
 
     return JsonResponse(response_data)
 

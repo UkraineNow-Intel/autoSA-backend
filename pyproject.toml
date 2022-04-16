@@ -20,6 +20,3 @@ extend-exclude = '''
   | migrations
 )/
 '''
-
-[tool.isort]
-profile = "black"

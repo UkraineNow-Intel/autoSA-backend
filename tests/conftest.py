@@ -1,5 +1,5 @@
-from rest_framework.test import APIClient
 import pytest
+from rest_framework.test import APIClient
 
 
 @pytest.fixture(scope="session")

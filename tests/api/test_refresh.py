@@ -4,10 +4,11 @@ try:
     import zoneinfo
 except (ImportError, ModuleNotFoundError):
     from backports import zoneinfo
-from django.urls import reverse
-from api.models import Source
-import pytest
 
+import pytest
+from django.urls import reverse
+
+from api.models import Source
 
 pytestmark = [pytest.mark.integration, pytest.mark.django_db]
 TZ_UTC = zoneinfo.ZoneInfo("UTC")
@@ -74,17 +75,29 @@ def test_refresh(apiclient, admin_user, mocker, query, expected_overwrite):
     mocker.patch.object(api.views.settings, "WEBSCRAPER_SITE_KEYS", ["liveuamap"])
     # don't call real API
     mocker.patch("infotools.webscraping.webscraper.get_latest", return_value=ITEMS)
+    mocker.patch("infotools.twitter.search_recent_tweets", return_value=[])
 
     response = apiclient.get(url, data=query, format="json")
     data = response.json()
 
     assert data == {
-        "liveuamap": {
-            "detail": "Refresh completed",
-            "errors": {"exceptions": [], "total": 0},
+        "meta": {
             "overwrite": expected_overwrite,
-            "processed": 3,
-        }
+            "start_time": None,
+            "end_time": None,
+        },
+        "sites": {
+            "liveuamap": {
+                "detail": "Refresh completed",
+                "errors": {"exceptions": [], "total": 0},
+                "processed": 3,
+            },
+            "twitter": {
+                "detail": "Refresh completed",
+                "errors": {"exceptions": [], "total": 0},
+                "processed": 0,
+            },
+        },
     }
     assert Source.objects.count() == 3
 

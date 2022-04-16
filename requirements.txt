@@ -20,6 +20,7 @@ pandas>=1.4.1
 psycopg2>=2.9.3,<3.0.0
 pyshp>=2.2.0
 python-decouple>=3.6
+pytz>=2022.1
 requests>=2.27.1
 spacy>=3.2.1
 tweepy>=4.7.0

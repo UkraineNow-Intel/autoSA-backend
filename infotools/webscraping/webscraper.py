@@ -1,10 +1,11 @@
+import configparser
+import datetime as dt
+import os
+
+import dateparser
+import requests
 import tzlocal
 from bs4 import BeautifulSoup
-import os
-import requests
-import configparser
-import dateparser
-import datetime as dt
 
 
 def read_config():

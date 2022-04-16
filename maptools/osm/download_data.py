@@ -1,8 +1,9 @@
 import os
+
 import shapefile
+from input import osmIDs
 from OSMPythonTools.api import Api
 from OSMPythonTools.overpass import Overpass
-from input import osmIDs
 
 # Ukraine: Україна
 

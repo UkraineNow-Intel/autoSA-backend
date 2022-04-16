@@ -4,16 +4,18 @@ try:
     import zoneinfo
 except (ImportError, ModuleNotFoundError):
     from backports import zoneinfo
+
 import json
+
+import pytest
 from django.urls import reverse
 from django.utils import timezone
+from psqlextra.query import ConflictAction
 from rest_framework import status
 from taggit.models import Tag, TaggedItem
-from psqlextra.query import ConflictAction
-from api.models import Source, Translation, Location
-from tests.api import factories
-import pytest
 
+from api.models import Location, Source, Translation
+from tests.api import factories
 
 pytestmark = [pytest.mark.integration, pytest.mark.django_db]
 TZ_UTC = zoneinfo.ZoneInfo("UTC")

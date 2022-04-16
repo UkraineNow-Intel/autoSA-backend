@@ -1,9 +1,11 @@
 from datetime import datetime
+
 import geopy
 import numpy as np
 import pandas as pd
-from infotools.location_parsing import extract_locations_for_dataframe
 import pytest
+
+from infotools.location_parsing import extract_locations_for_dataframe
 
 pytestmark = pytest.mark.integration
 

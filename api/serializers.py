@@ -1,6 +1,7 @@
 from rest_framework import serializers
-from taggit.serializers import TagListSerializerField, TaggitSerializer
-from .models import Source, Translation, Location
+from taggit.serializers import TaggitSerializer, TagListSerializerField
+
+from .models import Location, Source, Translation
 
 
 class TranslationSerializer(serializers.HyperlinkedModelSerializer):
