@@ -80,23 +80,19 @@ def test_refresh(apiclient, admin_user, mocker, query, expected_overwrite):
     response = apiclient.get(url, data=query, format="json")
     data = response.json()
 
-    assert data == {
-        "meta": {
-            "overwrite": expected_overwrite,
-            "start_time": None,
-            "end_time": None,
+    assert "meta" in data
+    assert "sites" in data
+    assert data["meta"]["overwrite"] == expected_overwrite
+    assert data["sites"] == {
+        "liveuamap": {
+            "detail": "Refresh completed",
+            "errors": {"exceptions": [], "total": 0},
+            "processed": 3,
         },
-        "sites": {
-            "liveuamap": {
-                "detail": "Refresh completed",
-                "errors": {"exceptions": [], "total": 0},
-                "processed": 3,
-            },
-            "twitter": {
-                "detail": "Refresh completed",
-                "errors": {"exceptions": [], "total": 0},
-                "processed": 0,
-            },
+        "twitter": {
+            "detail": "Refresh completed",
+            "errors": {"exceptions": [], "total": 0},
+            "processed": 0,
         },
     }
     assert Source.objects.count() == 3
@@ -118,25 +114,36 @@ def test_refresh_twice(apiclient, admin_user, mocker, query, expected_overwrite)
     import api.views
 
     mocker.patch.object(api.views.settings, "WEBSCRAPER_SITE_KEYS", ["liveuamap"])
+
     # don't call real API
     mocker.patch("infotools.webscraping.webscraper.get_latest", return_value=ITEMS)
+    mocker.patch("infotools.twitter.search_recent_tweets", return_value=[])
 
     # refresh twice. We should still have the same number of sources.
     expected_response = {
         "liveuamap": {
             "detail": "Refresh completed",
             "errors": {"exceptions": [], "total": 0},
-            "overwrite": expected_overwrite,
             "processed": 3,
-        }
+        },
+        "twitter": {
+            "detail": "Refresh completed",
+            "errors": {"exceptions": [], "total": 0},
+            "processed": 0,
+        },
     }
 
     # first refresh
     response = apiclient.get(url, data=query, format="json")
-    assert response.json() == expected_response
+    data = response.json()
+    assert "meta" in data
+    assert "sites" in data
+    assert data["meta"]["overwrite"] == expected_overwrite
+    assert data["sites"] == expected_response
     assert Source.objects.count() == 3
 
     # second refresh
     response = apiclient.get(url, data=query, format="json")
-    assert response.json() == expected_response
+    data = response.json()
+    assert data["sites"] == expected_response
     assert Source.objects.count() == 3

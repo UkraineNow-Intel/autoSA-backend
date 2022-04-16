@@ -175,3 +175,33 @@ curl --location --request GET 'http://localhost:8000/api/refresh/?start_time=201
 curl --location --request GET 'http://localhost:8000/api/refresh/?start_time=2012-04-15&end_time=2012-04-16' \
 --user admin:adminadmin
 ```
+
+Example response:
+
+```json
+{
+  "sites": {
+    "liveuamap": {
+      "detail": "Refresh completed",
+      "processed": 45,
+      "errors": {
+        "total": 0,
+        "exceptions": []
+      }
+    },
+    "twitter": {
+      "detail": "Refresh completed",
+      "processed": 304,
+      "errors": {
+        "total": 0,
+        "exceptions": []
+      }
+    }
+  },
+  "meta": {
+    "overwrite": false,
+    "start_time": "2022-04-16T19:53:31.889Z",
+    "end_time": null
+  }
+}
+```
