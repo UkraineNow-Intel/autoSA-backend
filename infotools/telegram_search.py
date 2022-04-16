@@ -35,7 +35,7 @@ class TelegramSearch:
         """
         if search_term is None:
             search_term = ""
-        with TelegramClient("uanow", TELEGRAM_API_ID, TELEGRAM_API_HASH) as client:
+        with TelegramClient("uanow", self.api_id, self.api_hash) as client:
             n_messages_per_request = 100  # seems this is max number already
             # Offset rate are needed for pagination/in case more than 100 messages
             # should be retrieved
