@@ -94,6 +94,7 @@ def _parse_refresh_time(date_string, default_value=None, oldest_value=None):
         return default_value
 
 
+# TODO: refactor, this is now too long, move the logic to a class
 def refresh(request):
     """Gets new data from different interfaces and adds it to the database.
     If "overwrite==true" and items have the same external_id, they will be

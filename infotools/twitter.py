@@ -24,6 +24,8 @@ def _format_source(tweet, users: dict, medias: dict):
     media_keys = attachments.get("media_keys", None) or []
     language = tweet.lang if tweet.lang in ("en", "ua", "ru") else "en"
     media_url = ""
+    # TODO: properly extract text from replies and quote tweets
+    # TODO: extract locations, if any
     source_data = {
         "interface": "twitter",
         "origin": user.username,
