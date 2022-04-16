@@ -77,9 +77,9 @@ def refresh(request):
         for items_chunk in chunked(data, INSERT_BATCH_SIZE):
             try:
                 (
-                    Source.objects
-                    .on_conflict(["external_id"], conflict_action)
-                    .bulk_insert(items_chunk)
+                    Source.objects.on_conflict(
+                        ["external_id"], conflict_action
+                    ).bulk_insert(items_chunk)
                 )
             except Exception as x:
                 # log exception, do not raise
