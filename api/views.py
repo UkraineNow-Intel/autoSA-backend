@@ -17,6 +17,10 @@ from django.db.models import Q
 from django_filters.rest_framework import FilterSet
 from infotools.webscraping import webscraper
 from psqlextra.query import ConflictAction
+from more_itertools import chunked
+
+
+INSERT_BATCH_SIZE = 1000
 
 
 def getPermissionsForUser(user):
@@ -66,32 +70,33 @@ def refresh(request):
     )
 
     response_data = {}
-    failed_items = []
+    errors = []
     for site_key in settings.WEBSCRAPER_SITE_KEYS:
-        data = webscraper.get_latest(site_key)
         processed = 0
-        for item in data:
+        data = webscraper.get_latest(site_key)
+        for items_chunk in chunked(data, INSERT_BATCH_SIZE):
             try:
-                Source.objects.on_conflict(
-                    ["external_id"], conflict_action
-                ).insert_and_get(**item)
-                processed += 1
+                (
+                    Source.objects
+                    .on_conflict(["external_id"], conflict_action)
+                    .bulk_insert(items_chunk)
+                )
             except Exception as x:
                 # log exception, do not raise
-                failed_items.append(
+                errors.append(
                     {
-                        "item": item,
                         "exception_class": x.__class__.__name__,
                         "exception_message": str(x),
                     }
                 )
+            processed += len(items_chunk)
         response_data[site_key] = {
             "detail": "Refresh completed",
             "overwrite": overwrite_existing,
             "processed": processed,
             "errors": {
-                "total": len(failed_items),
-                "items": failed_items,
+                "total": len(errors),
+                "exceptions": errors,
             },
         }
     return JsonResponse(response_data)

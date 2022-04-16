@@ -21,7 +21,7 @@ ITEMS = [
         "language": "en",
         "origin": "LiveUA Map",
         "text": "Explosions reported in Sumy",
-        "timestamp": dt.datetime(2022, 4, 15, 14, 21),
+        "timestamp": dt.datetime(2022, 4, 15, 14, 21, tzinfo=TZ_UTC),
         "url": "https://liveuamap.com/en/2022/15-april-explosions-reported-in-sumy",
     },
     {
@@ -39,7 +39,7 @@ ITEMS = [
             "imagery from today. These ships are near the Southern Naval Base in "
             "Donuzlav Lake"
         ),
-        "timestamp": dt.datetime(2022, 4, 15, 14, 21),
+        "timestamp": dt.datetime(2022, 4, 15, 14, 21, tzinfo=TZ_UTC),
         "url": "https://liveuamap.com/en/2022/15-april-several-ships-are-visible-off-the-west-coast-of",
     },
     {
@@ -49,7 +49,7 @@ ITEMS = [
         "language": "en",
         "origin": "LiveUA Map",
         "text": "Explosion reported in Kirovohrad region ",
-        "timestamp": dt.datetime(2022, 4, 15, 13, 21),
+        "timestamp": dt.datetime(2022, 4, 15, 13, 21, tzinfo=TZ_UTC),
         "url": "https://liveuamap.com/en/2022/15-april-explosion-reported-in-kirovohrad-region-",
     },
 ]
@@ -81,7 +81,7 @@ def test_refresh(apiclient, admin_user, mocker, query, expected_overwrite):
     assert data == {
         "liveuamap": {
             "detail": "Refresh completed",
-            "errors": {"items": [], "total": 0},
+            "errors": {"exceptions": [], "total": 0},
             "overwrite": expected_overwrite,
             "processed": 3,
         }
@@ -112,7 +112,7 @@ def test_refresh_twice(apiclient, admin_user, mocker, query, expected_overwrite)
     expected_response = {
         "liveuamap": {
             "detail": "Refresh completed",
-            "errors": {"items": [], "total": 0},
+            "errors": {"exceptions": [], "total": 0},
             "overwrite": expected_overwrite,
             "processed": 3,
         }

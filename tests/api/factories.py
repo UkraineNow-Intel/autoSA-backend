@@ -2,6 +2,13 @@ import datetime as dt
 import factory
 import uuid
 from api import models
+try:
+    import zoneinfo
+except (ImportError, ModuleNotFoundError):
+    from backports import zoneinfo
+
+
+TZ_UTC = zoneinfo.ZoneInfo("UTC")
 
 
 def uuid_as_str():
@@ -20,7 +27,7 @@ class SourceFactory(factory.django.DjangoModelFactory):
     text = "Something happened"
     language = models.LANGUAGE_EN
     pinned = False
-    timestamp = dt.datetime.utcnow()
+    timestamp = dt.datetime.utcnow().replace(tzinfo=TZ_UTC)
 
     @factory.post_generation
     def tags(self, create, extracted, **kwargs):
