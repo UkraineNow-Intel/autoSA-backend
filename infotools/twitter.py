@@ -1,11 +1,9 @@
 """
 Requires TWITTER_BEARER_TOKEN setting.
 """
-import datetime as dt
 import textwrap
-import pytz
-import tweepy
 
+import tweepy
 
 USER_FIELDS = "id,created_at,name,username,verified,location,url"
 TWEET_FIELDS = "id,created_at,text,author_id,geo,source,lang,attachments,entities"
@@ -15,36 +13,44 @@ EXPANSIONS = "author_id,attachments.media_keys,geo.place_id"
 MAX_QUERY_LEN = 512
 
 
+def _format_source(tweet, users: dict, medias: dict):
+    """Format tweet into a dict that we can use to create a Source.
+    param tweet: Tweet object
+    param user: dict of {id: User object}
+    param medias: dict of {media_key: Media object}
+    """
+    user = users[tweet.author_id]
+    attachments = getattr(tweet, "attachments", None) or {}
+    media_keys = attachments.get("media_keys", None) or []
+    language = tweet.lang if tweet.lang in ("en", "ua", "ru") else "en"
+    media_url = ""
+    source_data = {
+        "interface": "twitter",
+        "origin": user.username,
+        "external_id": tweet.id,
+        "language": language,
+        "url": f"https://twitter.com/{user.username}/status/{tweet.id}",
+        "text": tweet.text,
+        "timestamp": tweet.created_at,
+    }
+    if media_keys:
+        media_key = media_keys[0]
+        media = medias[media_key]
+        media_url = media.url
+    source_data["media_url"] = media_url or ""
+    return source_data
+
+
 def _generate_sources(response):
     """Generate dicts suitable for converting to sources.
     Returns iterable.
     param response: class tweepy.Response"""
-    users = {
-        user.id: user for user in response.includes.get("users", [])
-    }
-    medias = {
-        media.media_key: media for media in response.includes.get("media", [])
-    }
+    users = {user.id: user for user in response.includes.get("users", [])}
+    medias = {media.media_key: media for media in response.includes.get("media", [])}
     if not response.data:
         return None
     for tweet in response.data:
-        user = users[tweet.author_id]
-        attachments = getattr(tweet, "attachments", None) or {}
-        media_keys = attachments.get("media_keys", None) or []
-        source_data = {
-            "interface": "twitter",
-            "origin": user.username,
-            "external_id": tweet.id,
-            "language": tweet.lang or "en",
-            "url": f"https://twitter.com/{user.username}/status/{tweet.id}",
-            "text": tweet.text,
-            "timestamp": tweet.created_at,
-        }
-        if media_keys:
-            media_key = media_keys[0]
-            media = medias[media_key]
-            source_data["media_url"] = media.url
-        yield source_data
+        yield _format_source(tweet, users, medias)
 
 
 def _split_queries(twitter_accounts):
@@ -55,13 +61,6 @@ def _split_queries(twitter_accounts):
     return queries
 
 
-def _get_default_start_time():
-    """By default, retrieve from 24 hours back until now."""
-    return (dt.datetime.utcnow() - dt.timedelta(hours=1)).replace(
-        tzinfo=pytz.UTC
-    )
-
-
 def search_recent_tweets(
     settings,
     start_time=None,
@@ -69,7 +68,6 @@ def search_recent_tweets(
 ):
     client = tweepy.Client(settings["TWITTER_BEARER_TOKEN"])
     queries = _split_queries(settings["TWITTER_ACCOUNTS"])
-    start_time = start_time or _get_default_start_time()
     for query in queries:
         for response in tweepy.Paginator(
             client.search_recent_tweets,
@@ -83,5 +81,5 @@ def search_recent_tweets(
             media_fields=MEDIA_FIELDS,
             expansions=EXPANSIONS,
         ):
-            for source_sata in _generate_sources(response):
-                yield source_sata
+            for source_data in _generate_sources(response):
+                yield source_data
