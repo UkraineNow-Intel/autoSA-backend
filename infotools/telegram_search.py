@@ -47,9 +47,8 @@ class TelegramSearch:
             offset_id = 0
 
             api_responses = []
-            while len(api_responses) == 0 or (
-                len(result.messages) == n_messages_per_request
-            ):
+            received_max_nr_of_messages = True
+            while received_max_nr_of_messages:
                 if chat_name is None:
                     result = client(
                         functions.messages.SearchGlobalRequest(
@@ -84,6 +83,9 @@ class TelegramSearch:
                     if len(result.messages) > 0:
                         offset_id = result.messages[-1].id
                 api_responses.append(result)
+                received_max_nr_of_messages = (
+                    len(result.messages) == n_messages_per_request
+                )
         results = []
         for result in api_responses:
             # Create dictionary of  channel/user ids to names for lookup
