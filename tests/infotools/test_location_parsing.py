@@ -60,7 +60,7 @@ def test_extract_locations_for_dataframe():
                 " у Чернігові. Стався витік аміаку, проте його концентрація в межах"
                 " допустимої норми, розповів Суспільному голова ОВА Чаус"
             ),
-            "language": "ua",
+            "language": "uk",
             "timestamp": int(
                 round(
                     datetime(

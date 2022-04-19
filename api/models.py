@@ -7,7 +7,7 @@ from psqlextra.models import PostgresModel
 
 LANGUAGE_EN = "en"
 LANGUAGE_RU = "ru"
-LANGUAGE_UA = "ua"
+LANGUAGE_UK = "uk"
 
 INTERFACE_TWITTER = "twitter"
 INTERFACE_WEBSITE = "website"
@@ -18,7 +18,7 @@ INTERFACE_TELEGRAM = "telegram"
 LANGUAGES = (
     (LANGUAGE_EN, "English"),
     (LANGUAGE_RU, "Russian"),
-    (LANGUAGE_UA, "Ukrainian"),
+    (LANGUAGE_UK, "Ukrainian"),
 )
 
 INTERFACES = (

@@ -22,7 +22,7 @@ curl --location --request POST 'http://localhost:8000/api/sources' \
     "origin": "http://www.example.com",
     "headline": "Hi there",
     "text": "Щось трапилося",
-    "language": "ua",
+    "language": "uk",
     "timestamp": "2022-04-01T20:25:00Z",
     "pinned": "false",
     "translations": [],

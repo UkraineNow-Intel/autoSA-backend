@@ -29,7 +29,7 @@ def extract_locations(texts, languages):
     texts: list of str
         List of texts to extract locations from.
     languages: list of str
-        Language codes (e.g., ua/en/ru for each text.
+        Language codes (e.g., uk/en/ru for each text.
 
     Returns
     -------
@@ -61,7 +61,7 @@ def extract_location_names(texts, languages):
     texts: list of str
         List of texts to extract locations from.
     languages: list of str
-        Language codes (e.g., ua/en/ru for each text.
+        Language codes (e.g., uk/en/ru for each text.
 
     Returns
     -------
@@ -81,7 +81,7 @@ def extract_location_names(texts, languages):
         spacy_model = {
             "en": spacy_en_model,
             "ru": spacy_ru_model,
-            "ua": spacy_ru_model,  # no proper ua model exists in spacy
+            "uk": spacy_ru_model,  # no proper uk model exists in spacy
         }[language]
         location_names = extract_location_strings(spacy_model, text)
         location_names_per_text.append(location_names)
