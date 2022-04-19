@@ -6,10 +6,10 @@ import textwrap
 import tweepy
 
 USER_FIELDS = "id,created_at,name,username,verified,location,url"
-TWEET_FIELDS = "id,created_at,text,author_id,geo,source,lang,attachments,entities"
+TWEET_FIELDS = "id,created_at,text,author_id,geo,source,lang,attachments,entities,referenced_tweets"
 PLACE_FIELDS = "id,name,country_code,place_type,full_name,country,contained_within,geo"
 MEDIA_FIELDS = "media_key,type,url,preview_image_url,alt_text"
-EXPANSIONS = "author_id,attachments.media_keys,geo.place_id"
+EXPANSIONS = "author_id,attachments.media_keys,geo.place_id,referenced_tweets.id"
 MAX_QUERY_LEN = 512
 
 
@@ -24,7 +24,6 @@ def _format_source(tweet, users: dict, medias: dict):
     media_keys = attachments.get("media_keys", None) or []
     language = tweet.lang if tweet.lang in ("en", "ua", "ru") else "en"
     media_url = ""
-    # TODO: properly extract text from replies and quote tweets
     # TODO: extract locations, if any
     source_data = {
         "interface": "twitter",

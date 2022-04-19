@@ -69,7 +69,7 @@ def get_csrf(request):
 
 def _default_refresh_start_time():
     """By default, retrieve from 24 hours back until now."""
-    return (dt.datetime.utcnow() - dt.timedelta(hours=1)).replace(tzinfo=pytz.UTC)
+    return (dt.datetime.utcnow() - dt.timedelta(hours=24)).replace(tzinfo=pytz.UTC)
 
 
 def _oldest_refresh_start_time():
