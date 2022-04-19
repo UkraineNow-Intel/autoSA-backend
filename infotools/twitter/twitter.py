@@ -1,9 +1,12 @@
 """
 Requires TWITTER_BEARER_TOKEN setting.
 """
+import os
 import textwrap
 
 import tweepy
+
+from infotools.utils import read_config
 
 USER_FIELDS = "id,created_at,name,username,verified,location,url"
 TWEET_FIELDS = "id,created_at,text,author_id,geo,source,lang,attachments,entities,referenced_tweets"
@@ -67,8 +70,12 @@ def search_recent_tweets(
     start_time=None,
     end_time=None,
 ):
+    curr_dir = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
+    config = read_config(os.path.join(curr_dir, "config.ini"))
+    twitter_accounts = config.get("main", "twitter_accounts").strip().slpit("\n")
+
     client = tweepy.Client(settings["TWITTER_BEARER_TOKEN"])
-    queries = _split_queries(settings["TWITTER_ACCOUNTS"])
+    queries = _split_queries(twitter_accounts)
     for query in queries:
         for response in tweepy.Paginator(
             client.search_recent_tweets,

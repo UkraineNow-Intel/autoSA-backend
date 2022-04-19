@@ -21,7 +21,7 @@ from rest_framework.authentication import BasicAuthentication, SessionAuthentica
 from rest_framework.permissions import DjangoModelPermissions, IsAuthenticated
 from rest_framework.views import APIView
 
-from infotools import twitter
+from infotools.twitter import twitter
 from infotools.webscraping import webscraper
 
 from .models import Source, Translation
@@ -181,7 +181,6 @@ def refresh(request):
 
     # twitter data
     twitter_settings = {
-        "TWITTER_ACCOUNTS": settings.TWITTER_ACCOUNTS,
         "TWITTER_BEARER_TOKEN": settings.TWITTER_BEARER_TOKEN,
     }
     processed = 0
