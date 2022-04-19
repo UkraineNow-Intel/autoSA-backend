@@ -42,6 +42,6 @@ class TranslationFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = models.Translation
 
-    language = models.LANGUAGE_UA
+    language = models.LANGUAGE_UK
     text = "Щось трапилося"
     source = factory.SubFactory(SourceFactory)
