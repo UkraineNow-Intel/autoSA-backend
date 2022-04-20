@@ -150,7 +150,7 @@ def refresh(request):
         errors = []
         data = webscraper.get_latest(site_key)
         for chunk in chunked(data, INSERT_BATCH_SIZE):
-            errors = bulk_insert_sources(chunk, conflict_action, errors)
+            _, errors = bulk_insert_sources(chunk, conflict_action, errors)
             processed += len(chunk)
         add_response_data(site_key, processed, errors)
 
@@ -165,7 +165,7 @@ def refresh(request):
             twitter_settings, start_time=start_time, end_time=end_time
         )
         for chunk in chunked(tweets, INSERT_BATCH_SIZE):
-            errors = bulk_insert_sources(chunk, conflict_action, errors)
+            _, errors = bulk_insert_sources(chunk, conflict_action, errors)
             processed += len(chunk)
         add_response_data("twitter", processed, errors)
     except Exception as x:

@@ -72,7 +72,7 @@ class Source(PostgresModel):
         ]
 
 
-class Translation(models.Model):
+class Translation(PostgresModel):
     """Represents a translation for a source. One source may have
     multiple translations."""
 
@@ -83,7 +83,7 @@ class Translation(models.Model):
     )
 
 
-class Location(models.Model):
+class Location(PostgresModel):
     """Represents a geographic location. One source may have
     multiple locations."""
 
@@ -92,6 +92,10 @@ class Location(models.Model):
     point = models.PointField(blank=True, null=True)
     # in Factal: SRID=4326;POLYGON ((30.6116849 46.319522, 30.6116849 46.60042199999999, 30.8118901 46.60042199999999, 30.8118901 46.319522, 30.6116849 46.319522)) # noqa
     polygon = models.PolygonField(blank=True, null=True)
+    # was this location parsed from text?
+    # for example, tweets can be geotagged with user's location,
+    # and for these locations the value is False
+    from_text = models.BooleanField(default=False)
     source = models.ForeignKey(
         Source, on_delete=models.CASCADE, related_name="locations"
     )

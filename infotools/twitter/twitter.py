@@ -1,10 +1,12 @@
 """
 Requires TWITTER_BEARER_TOKEN setting.
 """
+import json
 import os
 import textwrap
 
 import tweepy
+from django.contrib.gis.geos import Polygon
 
 from infotools.utils import read_config
 
@@ -16,8 +18,8 @@ EXPANSIONS = "author_id,attachments.media_keys,geo.place_id,referenced_tweets.id
 MAX_QUERY_LEN = 512
 
 
-def _parse_locations(tweet, places: dict):
-    """Parse location out of tweet, if it has point or polygon"""
+def _format_locations(tweet, places: dict):
+    """Parse geo data from geotagged tweets"""
     if not tweet.geo:
         return []
     place = places.get(tweet.geo["place_id"], None)
@@ -27,6 +29,10 @@ def _parse_locations(tweet, places: dict):
         return [{"name": place.full_name, "point": place.geo}]
     if place.geo["type"].lower() == "polygon":
         return [{"name": place.full_name, "polygon": place.geo}]
+    if place.geo.get("bbox", None):
+        polygon = Polygon.from_bbox(place.geo["bbox"])
+        polygon_data = json.loads(polygon.geojson)
+        return [{"name": place.full_name, "polygon": polygon_data}]
     return []
 
 
@@ -49,7 +55,7 @@ def _format_source(tweet, users: dict, medias: dict, places: dict):
         "url": f"https://twitter.com/{user.username}/status/{tweet.id}",
         "text": tweet.text,
         "timestamp": tweet.created_at,
-        "locations": _parse_locations(tweet, places),
+        "locations": _format_locations(tweet, places),
     }
     if media_keys:
         media_key = media_keys[0]

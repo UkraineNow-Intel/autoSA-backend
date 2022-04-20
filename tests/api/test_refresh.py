@@ -8,7 +8,7 @@ except (ImportError, ModuleNotFoundError):
 import pytest
 from django.urls import reverse
 
-from api.models import Source
+from api.models import Location, Source
 
 pytestmark = [pytest.mark.integration, pytest.mark.django_db]
 TZ_UTC = zoneinfo.ZoneInfo("UTC")
@@ -53,6 +53,28 @@ ITEMS = [
         "timestamp": dt.datetime(2022, 4, 15, 13, 21, tzinfo=TZ_UTC),
         "url": "https://liveuamap.com/en/2022/15-april-explosion-reported-in-kirovohrad-region-",
     },
+]
+
+
+TWITTER_ITEMS = [
+    {
+        "external_id": "123",
+        "interface": "twitter",
+        "language": "en",
+        "origin": "@Blah",
+        "text": "Tweet tweet",
+        "timestamp": dt.datetime(2022, 4, 20, 14, 21, tzinfo=TZ_UTC),
+        "url": "https://twitter.com/Blah/status/123",
+        "locations": [
+            {
+                "name": "Los Angeles, CA",
+                "point": {
+                    "type": "point",
+                    "coordinates": [-40.5, 30.1],
+                },
+            }
+        ],
+    }
 ]
 
 
@@ -147,3 +169,40 @@ def test_refresh_twice(apiclient, admin_user, mocker, query, expected_overwrite)
     data = response.json()
     assert data["sites"] == expected_response
     assert Source.objects.count() == 3
+
+
+def test_refresh_twitter_locations(apiclient, admin_user, mocker):
+    """Test refresh sources"""
+    apiclient.force_authenticate(user=admin_user)
+    url = reverse("source-refresh")
+
+    # no web refresh
+    import api.views
+
+    mocker.patch.object(api.views.settings, "WEBSCRAPER_SITE_KEYS", [])
+
+    # don't call real API
+    mocker.patch("infotools.webscraping.webscraper.get_latest", return_value=[])
+    mocker.patch(
+        "infotools.twitter.twitter.search_recent_tweets", return_value=TWITTER_ITEMS
+    )
+
+    expected_response = {
+        "twitter": {
+            "detail": "Refresh completed",
+            "errors": {"exceptions": [], "total": 0},
+            "processed": 1,
+        },
+    }
+
+    response = apiclient.get(url, data={}, format="json")
+    data = response.json()
+    assert "meta" in data
+    assert "sites" in data
+    assert data["sites"] == expected_response
+    assert Source.objects.count() == 1
+    assert Location.objects.count() == 1
+    source = Source.objects.get(external_id="123")
+    location = Location.objects.get(source_id=source.id)
+    assert location.point is not None
+    assert location.polygon is None
