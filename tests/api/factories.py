@@ -1,6 +1,8 @@
 import datetime as dt
-import factory
 import uuid
+
+import factory
+
 from api import models
 
 try:

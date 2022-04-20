@@ -1,7 +1,7 @@
 import geopy
-from geopy.extra.rate_limiter import RateLimiter
 import numpy as np
 import spacy
+from geopy.extra.rate_limiter import RateLimiter
 
 
 def extract_locations_for_dataframe(dataframe):

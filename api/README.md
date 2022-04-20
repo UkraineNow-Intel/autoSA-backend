@@ -143,6 +143,13 @@ curl --location --request DELETE 'http://localhost:8000/api/sources/1' \
 
 ### Manually refresh data
 
+Refresh with default start and end time.
+
+* default `start_time` will be 24 hours ago
+* default `end_time` is now.
+
+**Remember that we can only retrieve tweets up to 7 days back in time.**
+
 ```shell
 # skip items if external_id exists
 curl --location --request GET 'http://localhost:8000/api/refresh/' \
@@ -151,4 +158,50 @@ curl --location --request GET 'http://localhost:8000/api/refresh/' \
 # update items if external_id exists
 curl --location --request GET 'http://localhost:8000/api/refresh/?overwrite=true' \
 --user admin:adminadmin
+```
+
+Provide dates for which to retrieve data:
+
+```shell
+# start_time as date
+curl --location --request GET 'http://localhost:8000/api/refresh/?start_time=2012-04-15' \
+--user admin:adminadmin
+
+# start_time as datetime
+curl --location --request GET 'http://localhost:8000/api/refresh/?start_time=2012-04-15T01%3A02%3A03Z' \
+--user admin:adminadmin
+
+# both start_time and end_time
+curl --location --request GET 'http://localhost:8000/api/refresh/?start_time=2012-04-15&end_time=2012-04-16' \
+--user admin:adminadmin
+```
+
+Example response:
+
+```json
+{
+  "sites": {
+    "liveuamap": {
+      "detail": "Refresh completed",
+      "processed": 45,
+      "errors": {
+        "total": 0,
+        "exceptions": []
+      }
+    },
+    "twitter": {
+      "detail": "Refresh completed",
+      "processed": 304,
+      "errors": {
+        "total": 0,
+        "exceptions": []
+      }
+    }
+  },
+  "meta": {
+    "overwrite": false,
+    "start_time": "2022-04-16T19:53:31.889Z",
+    "end_time": null
+  }
+}
 ```

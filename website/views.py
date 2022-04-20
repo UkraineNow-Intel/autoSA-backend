@@ -1,5 +1,5 @@
-from django.shortcuts import render, redirect
 from django.http import JsonResponse
+from django.shortcuts import redirect, render
 
 from maptools.translator import Translator
 

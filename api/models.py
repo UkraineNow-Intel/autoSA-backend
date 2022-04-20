@@ -1,9 +1,9 @@
 import uuid
+
 from django.contrib.gis.db import models
 from django.utils import timezone
-from taggit.managers import TaggableManager
 from psqlextra.models import PostgresModel
-
+from taggit.managers import TaggableManager
 
 LANGUAGE_EN = "en"
 LANGUAGE_RU = "ru"

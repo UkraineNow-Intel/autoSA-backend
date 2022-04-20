@@ -1,14 +1,7 @@
-from typing import Union
+import configparser
 
 
-def represents_int(value: Union[str, int]) -> bool:
-    """Checks whether or not a string or integer value represents an integer."""
-
-    if not isinstance(value, (str, int)):
-        raise ValueError("Value must be int or str.")
-
-    try:
-        is_int = value.isdigit()
-    except:
-        is_int = isinstance(value, int)
-    return is_int
+def read_config(file_name):
+    config = configparser.ConfigParser()
+    config.read(file_name)
+    return config

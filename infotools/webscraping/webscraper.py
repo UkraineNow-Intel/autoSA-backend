@@ -1,18 +1,12 @@
+import datetime as dt
+import os
+
+import dateparser
+import requests
 import tzlocal
 from bs4 import BeautifulSoup
-import os
-import requests
-import configparser
-import dateparser
-import datetime as dt
 
-
-def read_config():
-    curr_dir = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
-    config_file = os.path.join(curr_dir, "scrapeConfig.ini")
-    config = configparser.ConfigParser()
-    config.read(config_file)
-    return config
+from infotools.utils import read_config
 
 
 def parse_text_timestamp(ts):
@@ -38,8 +32,10 @@ def get_or_eval(site_config, key, item):
 
 def get_latest(site):
     """Scrape data from the website configured under specified key.
-    :param site: str key in scrapeConfig.ini"""
-    config = read_config()
+    param site: str key in scrapeConfig.ini"""
+    curr_dir = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
+    config = read_config(os.path.join(curr_dir, "scrapeConfig.ini"))
+
     url = config[site]["url"]
     res = requests.get(url)
     soup = BeautifulSoup(res.content, "html.parser")
