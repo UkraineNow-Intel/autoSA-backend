@@ -65,14 +65,18 @@ def _split_queries(twitter_accounts):
     return queries
 
 
+def _read_config():
+    curr_dir = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
+    config = read_config(os.path.join(curr_dir, "config.ini"))
+    return config.get("main", "twitter_accounts").strip().split("\n")
+
+
 def search_recent_tweets(
     settings,
     start_time=None,
     end_time=None,
 ):
-    curr_dir = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
-    config = read_config(os.path.join(curr_dir, "config.ini"))
-    twitter_accounts = config.get("main", "twitter_accounts").strip().slpit("\n")
+    twitter_accounts = _read_config()
 
     client = tweepy.Client(settings["TWITTER_BEARER_TOKEN"])
     queries = _split_queries(twitter_accounts)
