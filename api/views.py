@@ -24,6 +24,7 @@ from rest_framework.views import APIView
 from infotools.twitter import twitter
 from infotools.webscraping import webscraper
 
+from .helpers import add_response_error, bulk_insert_sources
 from .models import Source, Translation
 from .serializers import SourceSerializer, TranslationSerializer
 
@@ -132,15 +133,6 @@ def refresh(request):
         },
     }
 
-    def add_response_error(x: Exception, errors: list):
-        """Append error to list for site"""
-        errors.append(
-            {
-                "exception_class": x.__class__.__name__,
-                "exception_message": str(x),
-            }
-        )
-
     def add_response_data(key, processed, errors):
         """Append data to response for site"""
         response_data["sites"][key] = {
@@ -152,30 +144,13 @@ def refresh(request):
             },
         }
 
-    def insert_chunk(chunk, errors):
-        """Insert chunk of data. If fails, append exception to errors."""
-        logger.info("Inserting %s records", len(chunk))
-        try:
-            (
-                Source.objects.on_conflict(
-                    ["external_id"], conflict_action
-                ).bulk_insert(chunk)
-            )
-        except Exception as x:
-            # log exception, do not raise
-            add_response_error(x, errors)
-            logger.exception("Failed inserting data.")
-            for value in chunk:
-                logger.debug(str(value))
-        return errors
-
     # web scraper data
     for site_key in settings.WEBSCRAPER_SITE_KEYS:
         processed = 0
         errors = []
         data = webscraper.get_latest(site_key)
         for chunk in chunked(data, INSERT_BATCH_SIZE):
-            errors = insert_chunk(chunk, errors)
+            errors = bulk_insert_sources(chunk, conflict_action, errors)
             processed += len(chunk)
         add_response_data(site_key, processed, errors)
 
@@ -190,7 +165,7 @@ def refresh(request):
             twitter_settings, start_time=start_time, end_time=end_time
         )
         for chunk in chunked(tweets, INSERT_BATCH_SIZE):
-            errors = insert_chunk(chunk, errors)
+            errors = bulk_insert_sources(chunk, conflict_action, errors)
             processed += len(chunk)
         add_response_data("twitter", processed, errors)
     except Exception as x:

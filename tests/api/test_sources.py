@@ -593,3 +593,43 @@ def test_upsert():
     assert Source.objects.count() == 2
     assert [x["external_id"] for x in res2] == ["aaa", "bbb"]
     assert [x["text"] for x in res2] == ["blah blah", "blah blah"]
+
+
+def test_upsert_with_locations():
+    """Test upsert"""
+    res1 = Source.objects.on_conflict(
+        ["external_id"], ConflictAction.UPDATE
+    ).bulk_insert(
+        [
+            dict(interface="web", origin="example.com", external_id="aaa", text="blah"),
+            dict(interface="web", origin="example.com", external_id="bbb", text="blah"),
+        ]
+    )
+    # make sure records were inserted
+    assert Source.objects.count() == 2
+    assert [x["external_id"] for x in res1] == ["aaa", "bbb"]
+    assert [x["text"] for x in res1] == ["blah", "blah"]
+
+    res2 = Source.objects.on_conflict(
+        ["external_id"], ConflictAction.UPDATE
+    ).bulk_insert(
+        [
+            dict(
+                interface="web",
+                origin="example.com",
+                external_id="aaa",
+                text="blah blah",
+            ),
+            dict(
+                interface="web",
+                origin="example.com",
+                external_id="bbb",
+                text="blah blah",
+            ),
+        ]
+    )
+
+    # make sure records were updated
+    assert Source.objects.count() == 2
+    assert [x["external_id"] for x in res2] == ["aaa", "bbb"]
+    assert [x["text"] for x in res2] == ["blah blah", "blah blah"]

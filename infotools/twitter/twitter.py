@@ -16,7 +16,21 @@ EXPANSIONS = "author_id,attachments.media_keys,geo.place_id,referenced_tweets.id
 MAX_QUERY_LEN = 512
 
 
-def _format_source(tweet, users: dict, medias: dict):
+def _parse_locations(tweet, places: dict):
+    """Parse location out of tweet, if it has point or polygon"""
+    if not tweet.geo:
+        return []
+    place = places.get(tweet.geo["place_id"], None)
+    if not place or not place.geo:
+        return []
+    if place.geo["type"].lower() == "point":
+        return [{"name": place.full_name, "point": place.geo}]
+    if place.geo["type"].lower() == "polygon":
+        return [{"name": place.full_name, "polygon": place.geo}]
+    return []
+
+
+def _format_source(tweet, users: dict, medias: dict, places: dict):
     """Format tweet into a dict that we can use to create a Source.
     param tweet: Tweet object
     param user: dict of {id: User object}
@@ -27,7 +41,6 @@ def _format_source(tweet, users: dict, medias: dict):
     media_keys = attachments.get("media_keys", None) or []
     language = tweet.lang if tweet.lang in ("en", "ua", "ru") else "en"
     media_url = ""
-    # TODO: extract locations, if any
     source_data = {
         "interface": "twitter",
         "origin": user.username,
@@ -36,6 +49,7 @@ def _format_source(tweet, users: dict, medias: dict):
         "url": f"https://twitter.com/{user.username}/status/{tweet.id}",
         "text": tweet.text,
         "timestamp": tweet.created_at,
+        "locations": _parse_locations(tweet, places),
     }
     if media_keys:
         media_key = media_keys[0]
@@ -51,10 +65,11 @@ def _generate_sources(response):
     param response: class tweepy.Response"""
     users = {user.id: user for user in response.includes.get("users", [])}
     medias = {media.media_key: media for media in response.includes.get("media", [])}
+    places = {place.id: place for place in response.includes.get("places", [])}
     if not response.data:
         return None
     for tweet in response.data:
-        yield _format_source(tweet, users, medias)
+        yield _format_source(tweet, users, medias, places)
 
 
 def _split_queries(twitter_accounts):
