@@ -2,6 +2,7 @@ import datetime as dt
 import uuid
 
 import factory
+from taggit import models as taggit_models
 
 from api import models
 
@@ -16,6 +17,14 @@ TZ_UTC = zoneinfo.ZoneInfo("UTC")
 
 def uuid_as_str():
     return uuid.uuid4().hex
+
+
+class TagFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = taggit_models.Tag
+
+    name = "tag1"
+    slug = "tag1"
 
 
 class SourceFactory(factory.django.DjangoModelFactory):
