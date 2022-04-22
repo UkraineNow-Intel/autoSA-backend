@@ -5,6 +5,7 @@ The API has the following features:
 * add source
 * update source
 * delete sources
+* get all tags
 
 ### Example requests
 
@@ -203,5 +204,34 @@ Example response:
     "start_time": "2022-04-16T19:53:31.889Z",
     "end_time": null
   }
+}
+```
+
+Get all tags:
+
+```shell
+curl --location --request GET 'http://localhost:8000/api/tags' \
+--user admin:adminadmin
+```
+
+Response:
+
+```json
+{
+    "count": 2,
+    "next": null,
+    "previous": null,
+    "results": [
+        {
+            "id": 2,
+            "name": "boo",
+            "slug": "boo"
+        },
+        {
+            "id": 1,
+            "name": "foo",
+            "slug": "foo"
+        }
+    ]
 }
 ```

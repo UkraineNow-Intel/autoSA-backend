@@ -9,7 +9,6 @@ class TagSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tag
         fields = ["id", "name", "slug"]
-        ordering = ["name"]
 
 
 class TranslationSerializer(serializers.HyperlinkedModelSerializer):

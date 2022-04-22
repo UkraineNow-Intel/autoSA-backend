@@ -287,7 +287,7 @@ class TagViewSet(viewsets.ModelViewSet):
     """Only allow listing tags"""
 
     http_method_names = ["get", "head"]
-    queryset = Tag.objects.all()
+    queryset = Tag.objects.all().order_by("name")
     serializer_class = TagSerializer
     authentication_classes = [SessionAuthentication, BasicAuthentication]
     permission_classes = [DjangoModelPermissions]
