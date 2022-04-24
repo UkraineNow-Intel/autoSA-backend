@@ -88,7 +88,7 @@ def search_telegram_messages(
                         limit=n_messages_per_request,
                     )
                 )
-                offset_rate = result.next_rate
+                offset_rate = api_response.next_rate
             else:
                 api_response = client(
                     functions.messages.SearchRequest(

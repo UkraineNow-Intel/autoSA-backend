@@ -76,6 +76,9 @@ def test_refresh(apiclient, admin_user, mocker, query, expected_overwrite):
     # don't call real API
     mocker.patch("infotools.webscraping.webscraper.get_latest", return_value=ITEMS)
     mocker.patch("infotools.twitter.twitter.search_recent_tweets", return_value=[])
+    mocker.patch(
+        "infotools.telegram.telegram.search_recent_telegram_messages", return_value=[]
+    )
 
     response = apiclient.get(url, data=query, format="json")
     data = response.json()
@@ -90,6 +93,11 @@ def test_refresh(apiclient, admin_user, mocker, query, expected_overwrite):
             "processed": 3,
         },
         "twitter": {
+            "detail": "Refresh completed",
+            "errors": {"exceptions": [], "total": 0},
+            "processed": 0,
+        },
+        "telegram": {
             "detail": "Refresh completed",
             "errors": {"exceptions": [], "total": 0},
             "processed": 0,
@@ -118,6 +126,9 @@ def test_refresh_twice(apiclient, admin_user, mocker, query, expected_overwrite)
     # don't call real API
     mocker.patch("infotools.webscraping.webscraper.get_latest", return_value=ITEMS)
     mocker.patch("infotools.twitter.twitter.search_recent_tweets", return_value=[])
+    mocker.patch(
+        "infotools.telegram.telegram.search_recent_telegram_messages", return_value=[]
+    )
 
     # refresh twice. We should still have the same number of sources.
     expected_response = {
@@ -127,6 +138,11 @@ def test_refresh_twice(apiclient, admin_user, mocker, query, expected_overwrite)
             "processed": 3,
         },
         "twitter": {
+            "detail": "Refresh completed",
+            "errors": {"exceptions": [], "total": 0},
+            "processed": 0,
+        },
+        "telegram": {
             "detail": "Refresh completed",
             "errors": {"exceptions": [], "total": 0},
             "processed": 0,
