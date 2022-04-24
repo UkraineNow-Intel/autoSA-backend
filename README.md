@@ -33,7 +33,12 @@ Requirements:
 - Docker to run dependency containers
 - Configred local development (Python, Postgres libs etc)
 
+To start containers of the dependcies, run:
+```shell
+docker-compose up
+```
 
+To configure local development environment, please check the relevant parts below.
 
 ### Local development with locally installed dependencies
 
