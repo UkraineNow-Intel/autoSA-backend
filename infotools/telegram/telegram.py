@@ -1,6 +1,7 @@
 from decouple import config
-from telethon.sync import TelegramClient
 from telethon import functions, types
+from telethon.sync import TelegramClient
+
 from api.models import INTERFACE_TELEGRAM, LANGUAGE_EN
 
 TELEGRAM_API_ID = config("TELEGRAM_API_ID", cast=int)
@@ -110,6 +111,7 @@ class TelegramSearch:
 
 if __name__ == "__main__":
     import datetime as dt
+
     from backports import zoneinfo
 
     TZ_UTC = zoneinfo.ZoneInfo("UTC")
