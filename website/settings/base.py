@@ -170,3 +170,7 @@ WEBSCRAPER_SITE_KEYS = ["liveuamap"]
 
 # twitter data retrieval
 TWITTER_BEARER_TOKEN = config("TWITTER_BEARER_TOKEN")
+
+# telegram data retrieval
+TELEGRAM_API_ID = config("TELEGRAM_API_ID", cast=int)
+TELEGRAM_API_HASH = config("TELEGRAM_API_HASH")

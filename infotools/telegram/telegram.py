@@ -1,3 +1,6 @@
+"""
+Requires TELEGRAM_API_ID and TELEGRAM_API_HASH setting.
+"""
 import os.path
 
 from decouple import config
@@ -7,11 +10,9 @@ from telethon.sync import TelegramClient
 from api.models import INTERFACE_TELEGRAM, LANGUAGE_EN
 from infotools.utils import read_config
 
-TELEGRAM_API_ID = config("TELEGRAM_API_ID", cast=int)
-TELEGRAM_API_HASH = config("TELEGRAM_API_HASH")
-
 
 def search_recent_telegram_messages(
+    settings,
     start_time=None,
     end_time=None,
 ):
@@ -19,6 +20,8 @@ def search_recent_telegram_messages(
 
     Parameters
     ----------
+    settings: dict
+        Dict containing TELEGRAM_API_ID and TELEGRAM_API_HASH
     start_date: datetime, optional
         Earliest date of potential matched messages
     end_date: datetime, optional
@@ -33,14 +36,14 @@ def search_recent_telegram_messages(
     telegram_accounts = _read_config()
     for account in telegram_accounts:
         results = search_telegram_messages(
-            chat_name=account, min_date=start_time, max_date=end_time
+            settings, chat_name=account, min_date=start_time, max_date=end_time
         )
         for result in results:
             yield result
 
 
 def search_telegram_messages(
-    chat_name=None, search_term=None, min_date=None, max_date=None
+    settings, chat_name=None, search_term=None, min_date=None, max_date=None
 ):
     """Get Messages from Telegram, will block until async calls complete.
 
@@ -60,9 +63,11 @@ def search_telegram_messages(
     result: dict
         Matched telegram message.
     """
+    telegram_api_id = settings["TELEGRAM_API_ID"]
+    telegram_api_hash = settings["TELEGRAM_API_HASH"]
     if search_term is None:
         search_term = ""
-    with TelegramClient("uanow", TELEGRAM_API_ID, TELEGRAM_API_HASH) as client:
+    with TelegramClient("uanow", telegram_api_id, telegram_api_hash) as client:
         n_messages_per_request = 100  # seems this is max number already
         # Offset rate are needed for pagination/in case more than 100 messages
         # should be retrieved
@@ -144,9 +149,16 @@ if __name__ == "__main__":
 
     from backports import zoneinfo
 
+    from website.settings.base import TELEGRAM_API_HASH, TELEGRAM_API_ID
+
+    telegram_settings = {
+        "TELEGRAM_API_ID": TELEGRAM_API_ID,
+        "TELEGRAM_API_HASH": TELEGRAM_API_HASH,
+    }
     TZ_UTC = zoneinfo.ZoneInfo("UTC")
 
     result = search_recent_telegram_messages(
+        telegram_settings,
         start_time=dt.datetime(2022, 4, 11, 23, 00, 0, tzinfo=TZ_UTC),
         end_time=dt.datetime(2022, 4, 12, 0, 0, 0, tzinfo=TZ_UTC),
     )
@@ -156,6 +168,7 @@ if __name__ == "__main__":
 
     print("No search term or chat name")
     result = search_telegram_messages(
+        telegram_settings,
         chat_name=None,
         search_term=None,
         min_date=dt.datetime(2022, 4, 11, 23, 50, 0, tzinfo=TZ_UTC),
@@ -167,6 +180,7 @@ if __name__ == "__main__":
 
     print("No min max date")
     result = search_telegram_messages(
+        telegram_settings,
         chat_name="t.me/ukrainearmyforce",
         search_term="Харків",
     )
@@ -176,6 +190,7 @@ if __name__ == "__main__":
 
     print("No search term")
     result = search_telegram_messages(
+        telegram_settings,
         chat_name="t.me/ukrainearmyforce",
         search_term=None,
         min_date=dt.datetime(2022, 4, 11, 0, 0, 0, tzinfo=TZ_UTC),
@@ -187,6 +202,7 @@ if __name__ == "__main__":
 
     print("Everything given")
     result = search_telegram_messages(
+        telegram_settings,
         chat_name="t.me/ukrainearmyforce",
         search_term="Харків",
         min_date=dt.datetime(2022, 4, 11, 0, 0, 0, tzinfo=TZ_UTC),

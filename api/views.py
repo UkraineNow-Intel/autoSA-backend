@@ -199,11 +199,16 @@ def refresh(request):
         add_response_error(x, errors)
         add_response_data("twitter", processed, errors)
 
+    # twitter data
+    telegram_settings = {
+        "TELEGRAM_API_ID": settings.TELEGRAM_API_ID,
+        "TELEGRAM_API_HASH": settings.TELEGRAM_API_HASH,
+    }
     processed = 0
     errors = []
     try:
         messages = telegram.search_recent_telegram_messages(
-            start_time=start_time, end_time=end_time
+            telegram_settings, start_time=start_time, end_time=end_time
         )
         for chunk in chunked(messages, INSERT_BATCH_SIZE):
             errors = insert_chunk(chunk, errors)
