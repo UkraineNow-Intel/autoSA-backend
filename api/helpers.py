@@ -19,7 +19,7 @@ def add_response_error(x: Exception, errors: list):
 
 
 def _normalize_location(loc_data):
-    """Prepare to insert location, it should be a string representation of Point or Polygon."""
+    """Prepare to insert location, it should be a string representation of Point or Polygon or both."""
     loc_data["polygon"] = loc_data.get("polygon", None)
     loc_data["point"] = loc_data.get("point", None)
     if isinstance(loc_data["point"], dict):

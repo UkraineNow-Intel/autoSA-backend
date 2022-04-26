@@ -85,6 +85,7 @@ def test_parse_point():
     assert locations == [
         {
             "name": "Los Angeles, CA",
+            "origin": "geotag",
             "point": {
                 "type": "point",
                 "coordinates": [-40.5, 30.1],
@@ -100,6 +101,11 @@ def test_parse_polygon():
     assert locations == [
         {
             "name": "Manhattan, NY",
+            "origin": "geotag",
+            "point": {
+                "type": "Point",
+                "coordinates": [100.5, 0.5],
+            },
             "polygon": {
                 "type": "polygon",
                 "coordinates": [
@@ -123,6 +129,8 @@ def test_parse_bbox():
     assert locations == [
         {
             "name": "Pueblo, CO",
+            "origin": "geotag",
+            "point": {"coordinates": [-104.62277595, 38.26955], "type": "Point"},
             "polygon": {
                 "type": "Polygon",
                 "coordinates": [

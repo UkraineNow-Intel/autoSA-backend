@@ -6,8 +6,9 @@ import os
 import textwrap
 
 import tweepy
-from django.contrib.gis.geos import Polygon
+from django.contrib.gis.geos import GEOSGeometry, Polygon
 
+from api.models import LOCATION_ORIGIN_GEOTAG
 from infotools.utils import read_config
 
 USER_FIELDS = "id,created_at,name,username,verified,location,url"
@@ -26,13 +27,36 @@ def _format_locations(tweet, places: dict):
     if not place or not place.geo:
         return []
     if place.geo["type"].lower() == "point":
-        return [{"name": place.full_name, "point": place.geo}]
+        return [
+            {
+                "name": place.full_name,
+                "point": place.geo,
+                "origin": LOCATION_ORIGIN_GEOTAG,
+            }
+        ]
     if place.geo["type"].lower() == "polygon":
-        return [{"name": place.full_name, "polygon": place.geo}]
+        polygon = GEOSGeometry(json.dumps(place.geo))
+        point_data = json.loads(polygon.centroid.geojson)
+        return [
+            {
+                "name": place.full_name,
+                "point": point_data,
+                "polygon": place.geo,
+                "origin": LOCATION_ORIGIN_GEOTAG,
+            }
+        ]
     if place.geo.get("bbox", None):
         polygon = Polygon.from_bbox(place.geo["bbox"])
         polygon_data = json.loads(polygon.geojson)
-        return [{"name": place.full_name, "polygon": polygon_data}]
+        point_data = json.loads(polygon.centroid.geojson)
+        return [
+            {
+                "name": place.full_name,
+                "point": point_data,
+                "polygon": polygon_data,
+                "origin": LOCATION_ORIGIN_GEOTAG,
+            }
+        ]
     return []
 
 
