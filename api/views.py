@@ -199,7 +199,7 @@ def refresh(request):
         add_response_error(x, errors)
         add_response_data("twitter", processed, errors)
 
-    # twitter data
+    # telegram data
     telegram_settings = {
         "TELEGRAM_API_ID": settings.TELEGRAM_API_ID,
         "TELEGRAM_API_HASH": settings.TELEGRAM_API_HASH,
