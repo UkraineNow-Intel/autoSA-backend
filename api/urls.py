@@ -15,6 +15,7 @@ class OptionalSlashRouter(DefaultRouter):
 router = OptionalSlashRouter()
 router.register("sources", views.SourceViewSet)
 router.register("translations", views.TranslationViewSet)
+router.register("tags", views.TagViewSet)
 
 urlpatterns = [
     path("", include(router.urls)),

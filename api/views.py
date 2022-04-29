@@ -20,12 +20,13 @@ from rest_framework import viewsets
 from rest_framework.authentication import BasicAuthentication, SessionAuthentication
 from rest_framework.permissions import DjangoModelPermissions, IsAuthenticated
 from rest_framework.views import APIView
+from taggit.models import Tag
 
 from infotools.twitter import twitter
 from infotools.webscraping import webscraper
 
 from .models import Source, Translation
-from .serializers import SourceSerializer, TranslationSerializer
+from .serializers import SourceSerializer, TagSerializer, TranslationSerializer
 
 INSERT_BATCH_SIZE = 500
 logger = logging.getLogger(__name__)
@@ -280,6 +281,25 @@ class SourceFilter(FilterSet):
             "deleted": ["exact"],
             "pinned": ["exact"],
         }
+
+
+class TagViewSet(viewsets.ModelViewSet):
+    """Only allow listing tags"""
+
+    http_method_names = ["get", "head"]
+    queryset = Tag.objects.all().order_by("name")
+    serializer_class = TagSerializer
+    authentication_classes = [SessionAuthentication, BasicAuthentication]
+    permission_classes = [DjangoModelPermissions]
+
+    def list(self, request, *args, **kwargs):
+        """Return list of strings"""
+        queryset = self.get_queryset()
+        data = [x.name for x in queryset]
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            return self.get_paginated_response(data)
+        return JsonResponse(data)
 
 
 class SourceViewSet(viewsets.ModelViewSet):
