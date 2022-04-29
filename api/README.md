@@ -221,17 +221,6 @@ Response:
     "count": 2,
     "next": null,
     "previous": null,
-    "results": [
-        {
-            "id": 2,
-            "name": "boo",
-            "slug": "boo"
-        },
-        {
-            "id": 1,
-            "name": "foo",
-            "slug": "foo"
-        }
-    ]
+    "results": ["boo", "foo"]
 }
 ```

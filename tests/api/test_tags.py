@@ -25,7 +25,4 @@ def test_list_tags(apiclient, admin_user, tags):
     assert response.status_code == status.HTTP_200_OK
     tags = response.json()["results"]
     assert len(tags) == 3
-    tag_names = [t["name"] for t in tags]
-    tag_slugs = [t["slug"] for t in tags]
-    assert tag_names == ["tag1", "tag2", "tag3"]
-    assert tag_slugs == ["slug1", "slug2", "slug3"]
+    assert tags == ["tag1", "tag2", "tag3"]

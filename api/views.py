@@ -292,6 +292,15 @@ class TagViewSet(viewsets.ModelViewSet):
     authentication_classes = [SessionAuthentication, BasicAuthentication]
     permission_classes = [DjangoModelPermissions]
 
+    def list(self, request, *args, **kwargs):
+        """Return list of strings"""
+        queryset = self.get_queryset()
+        data = [x.name for x in queryset]
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            return self.get_paginated_response(data)
+        return JsonResponse(data)
+
 
 class SourceViewSet(viewsets.ModelViewSet):
     """List or retrieve sources"""
