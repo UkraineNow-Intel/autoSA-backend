@@ -6,11 +6,48 @@ There is an internal list of commonly used sources for Intelligence Analysts who
 
 Current tasks can be found in Projects, but also feel free to ask in our group chat if you need any assistance.
 
-## Requirements
+## How do I get set up? ###
+
+### VS Code: fully Dockerized development
+All components (Django, DB, Redis) reside in Docker containers.
+The container having Django in it is called development container. It plays the role of development environment, and thus will have all the required tools and dependencies (Python, Postgres client libs etc).
+> :warning: This approach doesn't run Celery scheduler and workers. Such support can be added though!
+
+Requirements:
+- Docker to run containers
+- VS Code to manage the development container
+
+To start development, open the project as a remote containers project in VS Code. Check [Developing inside a Container](https://code.visualstudio.com/docs/remote/containers) for more information.
+
+VS Code will automatically run migrations inside developement container to get Djagno database created (see [devcontainer.json](.devcontainer/devcontainer.json) to know more).
+
+Once the development container is up and running, VS Code will spawn a shell inside of it. Please refer to [Start Django Server](#start-django-server) to learn what to do next.
+
+PostgreSQL and Redis services will be accessible via `5432` and `6379` TCP ports of localhost interface.
+
+### Local development with Dockerized dependencies
+This approach still leverages Docker containers for dependencies, but local development happens at the host machine.
+
+> :warning: This approach doesn't run Celery scheduler and workers. Such support can be added though!
+
+Requirements:
+- Docker to run dependency containers
+- Configred local development (Python, Postgres libs etc)
+
+To start containers of the dependcies, run:
+```shell
+docker compose up
+```
+
+PostgreSQL and Redis services will be accessible via `5432` and `6379` TCP ports of localhost interface.
+
+To configure local development environment, please check the relevant parts below.
+
+### Local development with locally installed dependencies
+
+#### Requirements
 
 - python==3.8.10 through python==3.9.9
-
-## How do I get set up? ###
 
 We have scripts to help with installation:
 
