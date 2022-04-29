@@ -12,7 +12,6 @@ Current tasks can be found in Projects, but also feel free to ask in our group c
 All components (Django, DB, Redis) reside in Docker containers.
 The container having Django in it is called development container. It plays the role of development environment, and thus will have all the required tools and dependencies (Python, Postgres client libs etc).
 > :warning: This approach doesn't run Celery scheduler and workers. Such support can be added though!
- 
 
 Requirements:
 - Docker to run containers
@@ -23,6 +22,8 @@ To start development, open the project as a remote containers project in VS Code
 VS Code will automatically run migrations inside developement container to get Djagno database created (see [devcontainer.json](.devcontainer/devcontainer.json) to know more).
 
 Once the development container is up and running, VS Code will spawn a shell inside of it. Please refer to [Start Django Server](#start-django-server) to learn what to do next.
+
+PostgreSQL and Redis services will be accessible via `5432` and `6379` TCP ports of localhost interface.
 
 ### Local development with Dockerized dependencies
 This approach still leverages Docker containers for dependencies, but local development happens at the host machine.
@@ -35,8 +36,10 @@ Requirements:
 
 To start containers of the dependcies, run:
 ```shell
-docker-compose up
+docker compose up
 ```
+
+PostgreSQL and Redis services will be accessible via `5432` and `6379` TCP ports of localhost interface.
 
 To configure local development environment, please check the relevant parts below.
 
