@@ -188,7 +188,7 @@ def refresh(request):
     processed = 0
     errors = []
     try:
-        tweets = twitter.search_recent_tweets(
+        tweets = twitter.search_recent_messages(
             twitter_settings, start_time=start_time, end_time=end_time
         )
         for chunk in chunked(tweets, INSERT_BATCH_SIZE):
@@ -207,7 +207,7 @@ def refresh(request):
     processed = 0
     errors = []
     try:
-        messages = telegram.search_recent_telegram_messages(
+        messages = telegram.search_recent_messages(
             telegram_settings, start_time=start_time, end_time=end_time
         )
         for chunk in chunked(messages, INSERT_BATCH_SIZE):

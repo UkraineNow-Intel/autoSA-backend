@@ -71,18 +71,18 @@ def _read_config():
     return config.get("main", "twitter_accounts").strip().split("\n")
 
 
-def search_recent_tweets(
+def search_recent_messages(
     settings,
     start_time=None,
     end_time=None,
 ):
     twitter_accounts = _read_config()
 
-    client = tweepy.Client(settings["TWITTER_BEARER_TOKEN"])
+    api_client = tweepy.Client(settings["TWITTER_BEARER_TOKEN"])
     queries = _split_queries(twitter_accounts)
     for query in queries:
         for response in tweepy.Paginator(
-            client.search_recent_tweets,
+            api_client.search_recent_tweets,
             query=query,
             start_time=start_time,
             end_time=end_time,
@@ -95,3 +95,32 @@ def search_recent_tweets(
         ):
             for source_data in _generate_sources(response):
                 yield source_data
+
+
+if __name__ == "__main__":
+    # code to help debug the client
+    import datetime as dt
+    from pprint import pprint
+
+    import pytz
+
+    from website.settings.base import TWITTER_BEARER_TOKEN
+
+    twitter_settings = {
+        "TWITTER_BEARER_TOKEN": TWITTER_BEARER_TOKEN,
+    }
+
+    end_time = dt.datetime.utcnow().replace(
+        minute=0, second=0, microsecond=0, tzinfo=pytz.UTC
+    )
+    start_time = end_time - dt.timedelta(hours=1)
+    messages = list(
+        search_recent_messages(
+            twitter_settings,
+            start_time=start_time,
+            end_time=end_time,
+        )
+    )
+    for msg in messages:
+        pprint(msg)
+    print(f"Total messages: {len(messages)}")

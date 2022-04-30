@@ -11,7 +11,7 @@ from api.models import INTERFACE_TELEGRAM, LANGUAGE_EN
 from infotools.utils import read_config
 
 
-def search_recent_telegram_messages(
+def search_recent_messages(
     settings,
     start_time=None,
     end_time=None,
@@ -157,7 +157,7 @@ if __name__ == "__main__":
     }
     TZ_UTC = zoneinfo.ZoneInfo("UTC")
 
-    result = search_recent_telegram_messages(
+    result = search_recent_messages(
         telegram_settings,
         start_time=dt.datetime(2022, 4, 11, 12, 0, 0, tzinfo=TZ_UTC),
         end_time=dt.datetime(2022, 4, 12, 0, 0, 0, tzinfo=TZ_UTC),
