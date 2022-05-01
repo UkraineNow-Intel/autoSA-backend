@@ -2,6 +2,7 @@
 Requires TELEGRAM_API_ID and TELEGRAM_API_HASH setting.
 """
 import asyncio
+import logging
 import os.path
 import threading
 
@@ -12,6 +13,7 @@ from telethon.sync import TelegramClient
 from infotools.utils import read_config
 
 MESSAGES_PER_REQUEST = 100
+logger = logging.getLogger(__name__)
 
 
 def search_recent_messages(
@@ -148,6 +150,7 @@ def search_telegram_messages(
     # https://core.telegram.org/constructor/messages.messagesSlice
     offset_id = 0
     offset_rate = 0
+    chat_entities = {}
 
     if start_time and not start_time.tzinfo:
         start_time = start_time.replace(tzinfo=pytz.UTC)
@@ -158,10 +161,18 @@ def search_telegram_messages(
     with _create_client(settings) as client:
         while True:
             if chat_name:
+                logger.info(
+                    "Retrieving messages from %s with offset %s, search query: %s",
+                    chat_name,
+                    offset_id,
+                    search_term,
+                )
+                if chat_name not in chat_entities:
+                    chat_entities[chat_name] = client.get_input_entity(chat_name)
                 request = functions.messages.SearchRequest(
                     q=search_term or "",
                     filter=types.InputMessagesFilterEmpty(),
-                    peer=chat_name,
+                    peer=chat_entities[chat_name],
                     offset_id=offset_id,
                     add_offset=0,
                     min_date=start_time,
@@ -173,6 +184,11 @@ def search_telegram_messages(
                 )
                 response = client(request)
             else:
+                logger.info(
+                    "Retrieving messages with offset rate %s, search query: %s",
+                    offset_rate,
+                    search_term,
+                )
                 request = functions.messages.SearchGlobalRequest(
                     q=search_term or "",
                     filter=types.InputMessagesFilterEmpty(),

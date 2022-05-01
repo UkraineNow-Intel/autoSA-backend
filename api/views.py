@@ -198,6 +198,7 @@ def refresh(request):
     except Exception as x:
         add_response_error(x, errors)
         add_response_data("twitter", processed, errors)
+        logger.exception("Error retrieving twitter data")
 
     # telegram data
     telegram_settings = {
@@ -219,6 +220,7 @@ def refresh(request):
     except Exception as x:
         add_response_error(x, errors)
         add_response_data("telegram", processed, errors)
+        logger.exception("Error retrieving telegram data")
 
     return JsonResponse(response_data)
 
