@@ -17,3 +17,12 @@ TELEGRAM_MEDIA_PATH=/absolute/path/for/downloading/images
 # can be relative path under website
 TELEGRAM_MEDIA_PATH_URL=/static/telegram
 ```
+
+
+Before calling the Django `/api/refresh` endpoint, you need to initialize the client session. Unfortunately, this has to be done interactively.
+
+Run the Telegram script and answer the prompts to create a session file: 
+
+```shell
+PYTHONPATH=. python /Users/irinatruong/src/autoSA-backend/infotools/telegram/telegram.py
+```

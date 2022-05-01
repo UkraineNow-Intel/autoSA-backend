@@ -112,6 +112,14 @@ python -m spacy download en_core_web_sm ru_core_news_sm
 python manage.py createsuperuser --email admin@example.com --username admin
 ```
 
+3. If you will be calling API refresh method, you need to initialize the client session. Unfortunately, this has to be done interactively. Run the Telegram script and answer the prompts to create a session file: 
+
+```shell
+PYTHONPATH=. python /Users/irinatruong/src/autoSA-backend/infotools/telegram/telegram.py
+```
+
+You also need `TELEGRAM_*` settings in `.env.` file.
+
 ## Start Django Server
 
 ```shell
