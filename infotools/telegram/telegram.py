@@ -56,14 +56,34 @@ def _create_client(settings) -> TelegramClient:
     return TelegramClient("uanow", telegram_api_id, telegram_api_hash)
 
 
-def _format_message(msg, *, chats=None, users=None):
+def _download_image(client, msg, *, origin=None, settings=None):
+    """Download message is path is specified.
+    Return media_url for the source."""
+    settings = settings or {}
+    media_path = settings.get("TELEGRAM_MEDIA_PATH", None)
+    media_path_url = settings.get("TELEGRAM_MEDIA_PATH_URL", None)
+
+    media_url = ""
+    if media_path and media_path_url and msg.media:
+        filename = f"{origin}_{msg.id}.jpg"
+        full_path = os.path.join(media_path, filename)
+        media_path = client.download_media(msg, thumb=1, file=full_path)
+        if media_path:
+            media_url = f"{media_path_url}/{filename}"
+    return media_url
+
+
+def _format_source(msg, *, chats=None, users=None):
     """Create result dictionaries from messages.
     Uses dictionaries of  channel/user ids to names for lookup.
     """
     if hasattr(msg.peer_id, "channel_id"):
-        origin = chats[msg.peer_id.channel_id]
+        chat = chats[msg.peer_id.channel_id]
+        origin = chat.username
     else:
-        origin = users[msg.peer_id.user_id]
+        user = users[msg.peer_id.user_id]
+        origin = user.username
+
     return dict(
         external_id=f"{origin}:{msg.id}",
         timestamp=msg.date,
@@ -143,8 +163,8 @@ def search_telegram_messages(
                 response = client(request)
                 offset_rate = response.next_rate
 
-            chats = {c.id: c.username for c in response.chats}
-            users = {c.id: c.username for c in response.users}
+            chats = {c.id: c for c in response.chats}
+            users = {c.id: c for c in response.users}
 
             # we did a search, and there's no messages, time to exit.
             if len(response.messages) == 0:
@@ -152,7 +172,11 @@ def search_telegram_messages(
 
             for msg in response.messages:
                 offset_id = msg.id
-                yield _format_message(msg, chats=chats, users=users)
+                source = _format_source(msg, chats=chats, users=users)
+                source["media_url"] = _download_image(
+                    client, msg, origin=source["origin"], settings=settings
+                )
+                yield source
 
             # we did a global search, and there's no next page, time to exit.
             if not chat_name and offset_rate is None:
@@ -169,7 +193,12 @@ if __name__ == "__main__":
     import datetime as dt
     from pprint import pprint
 
-    from website.settings.base import TELEGRAM_API_HASH, TELEGRAM_API_ID
+    from website.settings.base import (
+        TELEGRAM_API_HASH,
+        TELEGRAM_API_ID,
+        TELEGRAM_MEDIA_PATH,
+        TELEGRAM_MEDIA_PATH_URL,
+    )
 
     def _print_results(results, description):
         total = 0
@@ -187,6 +216,8 @@ if __name__ == "__main__":
     telegram_settings = {
         "TELEGRAM_API_ID": TELEGRAM_API_ID,
         "TELEGRAM_API_HASH": TELEGRAM_API_HASH,
+        "TELEGRAM_MEDIA_PATH": TELEGRAM_MEDIA_PATH,
+        "TELEGRAM_MEDIA_PATH_URL": TELEGRAM_MEDIA_PATH_URL,
     }
     start_time = dt.datetime(year=2022, month=4, day=29, hour=0)
     end_time = dt.datetime(year=2022, month=4, day=29, hour=1)
