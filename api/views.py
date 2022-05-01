@@ -203,6 +203,8 @@ def refresh(request):
     telegram_settings = {
         "TELEGRAM_API_ID": settings.TELEGRAM_API_ID,
         "TELEGRAM_API_HASH": settings.TELEGRAM_API_HASH,
+        "TELEGRAM_MEDIA_PATH": settings.TELEGRAM_MEDIA_PATH,
+        "TELEGRAM_MEDIA_PATH_URL": settings.TELEGRAM_MEDIA_PATH_URL,
     }
     processed = 0
     errors = []

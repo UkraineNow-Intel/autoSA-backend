@@ -1,7 +1,9 @@
 """
 Requires TELEGRAM_API_ID and TELEGRAM_API_HASH setting.
 """
+import asyncio
 import os.path
+import threading
 
 import pytz
 from telethon import functions, types
@@ -39,13 +41,19 @@ def search_recent_messages(
         # scraping messages from specific accounts
         for account in telegram_accounts:
             for result in search_telegram_messages(
-                settings, chat_name=account, start_time=start_time, end_time=end_time
+                settings,
+                chat_name=account,
+                start_time=start_time,
+                end_time=end_time,
             ):
                 yield result
     else:
         # global search
         for result in search_telegram_messages(
-            settings, chat_name=None, start_time=start_time, end_time=end_time
+            settings,
+            chat_name=None,
+            start_time=start_time,
+            end_time=end_time,
         ):
             yield result
 
@@ -53,7 +61,13 @@ def search_recent_messages(
 def _create_client(settings) -> TelegramClient:
     telegram_api_id = settings["TELEGRAM_API_ID"]
     telegram_api_hash = settings["TELEGRAM_API_HASH"]
-    return TelegramClient("uanow", telegram_api_id, telegram_api_hash)
+
+    if threading.current_thread() != threading.main_thread():
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+    else:
+        loop = None
+    return TelegramClient("uanow", telegram_api_id, telegram_api_hash, loop=loop)
 
 
 def _download_image(client, msg, *, origin=None, settings=None):
@@ -63,14 +77,18 @@ def _download_image(client, msg, *, origin=None, settings=None):
     media_path = settings.get("TELEGRAM_MEDIA_PATH", None)
     media_path_url = settings.get("TELEGRAM_MEDIA_PATH_URL", None)
 
-    media_url = ""
+    result = ""
     if media_path and media_path_url and msg.media:
         filename = f"{origin}_{msg.id}.jpg"
         full_path = os.path.join(media_path, filename)
-        media_path = client.download_media(msg, thumb=1, file=full_path)
-        if media_path:
-            media_url = f"{media_path_url}/{filename}"
-    return media_url
+        if os.path.exists(full_path):
+            # don't re-download image if exists
+            result = f"{media_path_url}/{filename}"
+        else:
+            media_path = client.download_media(msg, thumb=1, file=full_path)
+            if media_path:
+                result = f"{media_path_url}/{filename}"
+    return result
 
 
 def _format_source(msg, *, chats=None, users=None):
@@ -84,20 +102,25 @@ def _format_source(msg, *, chats=None, users=None):
         user = users[msg.peer_id.user_id]
         origin = user.username
 
+    # TODO: locations
     return dict(
         external_id=f"{origin}:{msg.id}",
         timestamp=msg.date,
-        text=msg.message,
+        text=msg.message or "",
         url=f"https://t.me/{origin}/{msg.id}",
         interface="telegram",
         language="en",  # TODO: does Telegram have this attribute?
         origin=origin,
-        locations=[],
     )
 
 
 def search_telegram_messages(
-    settings, *, chat_name=None, search_term=None, start_time=None, end_time=None
+    settings,
+    *,
+    chat_name=None,
+    search_term=None,
+    start_time=None,
+    end_time=None,
 ):
     """Get Messages from Telegram, will block until async calls complete.
 
