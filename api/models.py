@@ -14,6 +14,9 @@ INTERFACE_WEBSITE = "website"
 INTERFACE_API = "api"
 INTERFACE_TELEGRAM = "telegram"
 
+LOCATION_ORIGIN_GEOTAG = "geotag"
+LOCATION_ORIGIN_TEXT = "text"
+LOCATION_ORIGIN_OPERATOR = "operator"
 
 LANGUAGES = (
     (LANGUAGE_EN, "English"),
@@ -26,6 +29,12 @@ INTERFACES = (
     (INTERFACE_TELEGRAM, "Telegram"),
     (INTERFACE_WEBSITE, "Website"),
     (INTERFACE_API, "API"),
+)
+
+LOCATION_ORIGINS = (
+    (LOCATION_ORIGIN_GEOTAG, "Geotagged source"),
+    (LOCATION_ORIGIN_TEXT, "Parsed from text"),
+    (LOCATION_ORIGIN_OPERATOR, "Geolocated by operator"),
 )
 
 
@@ -72,7 +81,7 @@ class Source(PostgresModel):
         ]
 
 
-class Translation(models.Model):
+class Translation(PostgresModel):
     """Represents a translation for a source. One source may have
     multiple translations."""
 
@@ -83,7 +92,7 @@ class Translation(models.Model):
     )
 
 
-class Location(models.Model):
+class Location(PostgresModel):
     """Represents a geographic location. One source may have
     multiple locations."""
 
@@ -92,6 +101,10 @@ class Location(models.Model):
     point = models.PointField(blank=True, null=True)
     # in Factal: SRID=4326;POLYGON ((30.6116849 46.319522, 30.6116849 46.60042199999999, 30.8118901 46.60042199999999, 30.8118901 46.319522, 30.6116849 46.319522)) # noqa
     polygon = models.PolygonField(blank=True, null=True)
+    # where did this location come from?
+    origin = models.CharField(
+        max_length=50, choices=LOCATION_ORIGINS, default=LOCATION_ORIGIN_GEOTAG
+    )
     source = models.ForeignKey(
         Source, on_delete=models.CASCADE, related_name="locations"
     )

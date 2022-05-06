@@ -1,11 +1,14 @@
 """
 Requires TWITTER_BEARER_TOKEN setting.
 """
+import json
 import os
 import textwrap
 
 import tweepy
+from django.contrib.gis.geos import GEOSGeometry, Polygon
 
+from api.models import LOCATION_ORIGIN_GEOTAG
 from infotools.utils import read_config
 
 USER_FIELDS = "id,created_at,name,username,verified,location,url"
@@ -16,7 +19,48 @@ EXPANSIONS = "author_id,attachments.media_keys,geo.place_id,referenced_tweets.id
 MAX_QUERY_LEN = 512
 
 
-def _format_source(tweet, users: dict, medias: dict):
+def _format_locations(tweet, places: dict):
+    """Parse geo data from geotagged tweets"""
+    if not tweet.geo:
+        return []
+    place = places.get(tweet.geo["place_id"], None)
+    if not place or not place.geo:
+        return []
+    if place.geo["type"].lower() == "point":
+        return [
+            {
+                "name": place.full_name,
+                "point": place.geo,
+                "origin": LOCATION_ORIGIN_GEOTAG,
+            }
+        ]
+    if place.geo["type"].lower() == "polygon":
+        polygon = GEOSGeometry(json.dumps(place.geo))
+        point_data = json.loads(polygon.centroid.geojson)
+        return [
+            {
+                "name": place.full_name,
+                "point": point_data,
+                "polygon": place.geo,
+                "origin": LOCATION_ORIGIN_GEOTAG,
+            }
+        ]
+    if place.geo.get("bbox", None):
+        polygon = Polygon.from_bbox(place.geo["bbox"])
+        polygon_data = json.loads(polygon.geojson)
+        point_data = json.loads(polygon.centroid.geojson)
+        return [
+            {
+                "name": place.full_name,
+                "point": point_data,
+                "polygon": polygon_data,
+                "origin": LOCATION_ORIGIN_GEOTAG,
+            }
+        ]
+    return []
+
+
+def _format_source(tweet, users: dict, medias: dict, places: dict):
     """Format tweet into a dict that we can use to create a Source.
     param tweet: Tweet object
     param user: dict of {id: User object}
@@ -27,7 +71,6 @@ def _format_source(tweet, users: dict, medias: dict):
     media_keys = attachments.get("media_keys", None) or []
     language = tweet.lang if tweet.lang in ("en", "ua", "ru") else "en"
     media_url = ""
-    # TODO: extract locations, if any
     source_data = {
         "interface": "twitter",
         "origin": user.username,
@@ -36,6 +79,7 @@ def _format_source(tweet, users: dict, medias: dict):
         "url": f"https://twitter.com/{user.username}/status/{tweet.id}",
         "text": tweet.text,
         "timestamp": tweet.created_at,
+        "locations": _format_locations(tweet, places),
     }
     if media_keys:
         media_key = media_keys[0]
@@ -51,10 +95,11 @@ def _generate_sources(response):
     param response: class tweepy.Response"""
     users = {user.id: user for user in response.includes.get("users", [])}
     medias = {media.media_key: media for media in response.includes.get("media", [])}
+    places = {place.id: place for place in response.includes.get("places", [])}
     if not response.data:
         return None
     for tweet in response.data:
-        yield _format_source(tweet, users, medias)
+        yield _format_source(tweet, users, medias, places)
 
 
 def _split_queries(twitter_accounts):
