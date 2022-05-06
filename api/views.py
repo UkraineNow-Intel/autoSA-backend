@@ -22,6 +22,7 @@ from rest_framework.permissions import DjangoModelPermissions, IsAuthenticated
 from rest_framework.views import APIView
 from taggit.models import Tag
 
+from infotools.telegram import telegram
 from infotools.twitter import twitter
 from infotools.webscraping import webscraper
 
@@ -187,7 +188,7 @@ def refresh(request):
     processed = 0
     errors = []
     try:
-        tweets = twitter.search_recent_tweets(
+        tweets = twitter.search_recent_messages(
             twitter_settings, start_time=start_time, end_time=end_time
         )
         for chunk in chunked(tweets, INSERT_BATCH_SIZE):
@@ -197,6 +198,29 @@ def refresh(request):
     except Exception as x:
         add_response_error(x, errors)
         add_response_data("twitter", processed, errors)
+        logger.exception("Error retrieving twitter data")
+
+    # telegram data
+    telegram_settings = {
+        "TELEGRAM_API_ID": settings.TELEGRAM_API_ID,
+        "TELEGRAM_API_HASH": settings.TELEGRAM_API_HASH,
+        "TELEGRAM_MEDIA_PATH": settings.TELEGRAM_MEDIA_PATH,
+        "TELEGRAM_MEDIA_PATH_URL": settings.TELEGRAM_MEDIA_PATH_URL,
+    }
+    processed = 0
+    errors = []
+    try:
+        messages = telegram.search_recent_messages(
+            telegram_settings, start_time=start_time, end_time=end_time
+        )
+        for chunk in chunked(messages, INSERT_BATCH_SIZE):
+            errors = insert_chunk(chunk, errors)
+            processed += len(chunk)
+        add_response_data("telegram", processed, errors)
+    except Exception as x:
+        add_response_error(x, errors)
+        add_response_data("telegram", processed, errors)
+        logger.exception("Error retrieving telegram data")
 
     return JsonResponse(response_data)
 
